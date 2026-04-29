@@ -1000,7 +1000,12 @@ bindsym $mod+XF86MonBrightnessDown exec --no-startup-id "pactl set-sink-volume 0
 
 # <config hostname="arch-macbookpro13">
 font xft:SF Pro Display 12
-exec --no-startup-id feh --randomize --bg-fill ~/.dotfiles/images/Img-9.png; sleep 1; picom -b
+# exec --no-startup-id feh --randomize --bg-fill ~/.dotfiles/images/Img-9.png; sleep 1; picom -b
+exec --no-startup-id cd ~/Pictures/wallpapers && feh --bg-fill --randomize -f batch4.feh; sleep 1; picom -b
+
+ # Triple screen (same command — feh auto-fills all monitors):
+ # exec --no-startup-id feh --bg-fill --randomize -f ~/wallpapers/batch4.feh; sleep 1; picom -b
+
 # SWAP LEFT ALT/OPTION WITH LEFT COMMAND, FROM: https://askubuntu.com/a/29609
 exec_always --no-startup-id sleep 3;setxkbmap -option ctrl:nocaps -option "terminate:ctrl_alt_bksp" -option altwin:swap_lalt_lwin -variant altgr-intl
 exec --no-startup-id blueman-applet
