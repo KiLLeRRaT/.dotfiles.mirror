@@ -886,6 +886,7 @@ exec --no-startup-id i3-msg 'workspace $ws3; exec alacritty --title "Terminal Bu
 # <config hostname="arch-crowdstrike">
 exec --no-startup-id /opt/netskope/stagent/stAgentUI
 exec --no-startup-id spice-vdagent
+exec --no-startup-id pkill xautolock # WE don't want this on our arch VM, since the host will lock
 # </config>
 
 # <config hostname="arch-t570">
