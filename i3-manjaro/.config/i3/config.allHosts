@@ -855,7 +855,9 @@ font xft:SF Pro Display 11
 
 # FROM: https://github.com/betterlockscreen/betterlockscreen
 # betterlockscreen -u ~/.dotfiles/images
-exec --no-startup-id feh --randomize --bg-fill ~/.dotfiles/images/* --randomize --bg-fill ~/.dotfiles/images/* --randomize --bg-fill ~/.dotfiles/images/*; sleep 1; picom -b
+# exec --no-startup-id feh --randomize --bg-fill ~/.dotfiles/images/* --randomize --bg-fill ~/.dotfiles/images/* --randomize --bg-fill ~/.dotfiles/images/*; sleep 1; picom -b
+exec --no-startup-id cd ~/Pictures/wallpapers && feh --bg-fill --randomize -f batch4.feh; sleep 1; picom -b
+
 exec --no-startup-id pipewire-pulse
 exec --no-startup-id emote # ctrl + alt + e
 
