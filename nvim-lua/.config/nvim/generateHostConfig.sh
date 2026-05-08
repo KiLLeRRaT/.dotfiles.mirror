@@ -3,14 +3,14 @@
 echo "host is $HOST"
 
 # RUN SED SCRIPT TO STRIP HOST SPECIFIC PARTS FROM i3status CONFIG FILE
-pushd ~/.dotfiles/i3-manjaro/.config/i3status
+pushd ~/.dotfiles/i3/.config/i3status
 rm config
 sed '/# <hostSpecificConfig>/,/# <\/hostSpecificConfig>/ {/# <config hostname="'$HOST'">/,/# <\/config>/!d;}' config.allHosts > config
 popd
 
 
 # RUN SED SCRIPT TO STRIP HOST SPECIFIC PARTS FROM i3 CONFIG FILE
-pushd ~/.dotfiles/i3-manjaro/.config/i3
+pushd ~/.dotfiles/i3/.config/i3
 rm config
 sed '/# <hostSpecificConfig>/,/# <\/hostSpecificConfig>/ {/# <config hostname="'$HOST'">/,/# <\/config>/!d;}' config.allHosts > config
 popd

@@ -300,7 +300,7 @@ arch-chroot /mnt mkdir -p /usr/share/backgrounds/$USERNAME
 # arch-chroot /mnt chmod o+x /usr/share/backgrounds/$USERNAME
 arch-chroot /mnt cd /home/$USERNAME/.dotfiles && stow -t /usr/share/backgrounds/$USERNAME images
 arch-chroot /mnt chmod o+r /usr/share/backgrounds/$USERNAME/*
-arch-chroot -u $USERNAME /mnt cd /home/$USERNAME/.dotfiles && stow alacritty dmenurc dosbox dunst flameshot fonts gitconfig gtk-2.0 gtk-3.0 gtk-4.0 i3-manjaro nvim-lua oh-my-posh picom ranger tmux zshrc
+arch-chroot -u $USERNAME /mnt cd /home/$USERNAME/.dotfiles && stow alacritty dmenurc dosbox dunst flameshot fonts gitconfig gtk-2.0 gtk-3.0 gtk-4.0 i3 nvim-lua oh-my-posh picom ranger tmux zshrc
 
 
 echo "Let's copy our gtk configs to /root, so that root has the same theme"
