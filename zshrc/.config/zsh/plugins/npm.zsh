@@ -40,6 +40,17 @@ if [ -f $HOME/.config/op/npm-env ] && command -v op >/dev/null 2>&1; then
 
 	# alias npm="op run --env-file=$HOME/.config/op/npm-env --no-masking -- env | sort && npm"
 	# alias npm="op run --env-file=$HOME/.config/op/npm-env --no-masking -- npm"
-	alias npm="op run --account sandfield.1password.com --env-file=$HOME/.config/op/npm-env -- npm --color=always"
+
+	# alias npm="op run --account sandfield.1password.com --env-file=$HOME/.config/op/npm-env -- npm --color=always"
+	npm() {
+		if [[ "$1" == "install" ]]; then
+			# Run the 1Password-wrapped command
+			op run --account sandfield.1password.com --env-file="$HOME/.config/op/npm-env" -- command npm --color=always "$@"
+		else
+			# Run the regular npm command for everything else
+			command npm "$@"
+		fi
+	}
+
 	alias yarn="op run --account sandfield.1password.com --env-file=$HOME/.config/op/npm-env -- yarn"
 fi
