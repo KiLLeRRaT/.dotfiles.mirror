@@ -48,7 +48,7 @@ if [ -f $HOME/.config/op/npm-env ] && command -v op >/dev/null 2>&1; then
 			command npm "$@"
 		else
 			# Run the 1Password-wrapped command
-			op run --account sandfield.1password.com --env-file="$HOME/.config/op/npm-env" -- command npm --color=always "$@"
+			op run --account sandfield.1password.com --env-file="$HOME/.config/op/npm-env" -- npm --color=always "$@"
 		fi
 	}
 
