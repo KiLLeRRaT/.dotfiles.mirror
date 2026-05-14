@@ -419,27 +419,19 @@ assign [class="Spotify"] $ws1
 
 # Open specific applications in floating mode
 for_window [title="alsamixer"] floating enable border pixel 1
-for_window [class="calamares"] floating enable border normal
-for_window [title="File Transfer*"] floating enable
-for_window [class="GParted"] floating enable border normal
-for_window [class="Lightdm-settings"] floating enable
-for_window [class="Lxappearance"] floating enable sticky enable border normal
-# for_window [class="Manjaro-hello"] floating enable
-# for_window [class="Manjaro Settings Manager"] floating enable border normal
-# for_window [title="About Pale Moon"] floating enable
-# for_window [class="Pamac-manager"] floating enable
-# for_window [class="Pavucontrol"] floating enable
 for_window [class="Pavucontrol"] floating enable border normal
 for_window [class="qt5ct"] floating enable sticky enable border normal
 for_window [class="Qtconfig-qt4"] floating enable sticky enable border normal
 for_window [class="(?i)System-config-printer.py"] floating enable border normal
 for_window [class="Timeset-gui"] floating enable border normal
 
-for_window [title="TimeSheetEntry - Brave$"] floating enable border normal, move position center, resize set 830 800
+# for_window [title="TimeSheetEntry - Brave$"] floating enable border normal, move position center, resize set 830 800
+for_window [title="TimeSheetEntry - Brave$"] floating enable border normal, move position center, resize set 830 800, sticky enable
 for_window [title="^Spaces$"] floating enable border normal, move position center, resize set 760 800
 for_window [class="Blueman-manager"] floating enable border normal, resize set 760 450, move position center
 for_window [class="easyeffects"] floating enable border normal, resize set 1410 764, move position center
 for_window [class="pavucontrol"] floating enable border normal, resize set 1153 685, move position center
+for_window [class="vlc"] sticky enable # will become sticky when floating
 
 # for_window [title="Virtual Machine Manager"] resize set width 380
 # for_window [class="Virt-manager"] resize set width 2174
