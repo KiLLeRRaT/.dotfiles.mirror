@@ -612,4 +612,9 @@ if [[ -n "$TMUX" ]]; then
 	eval $(tmux show-env -s SSH_AUTH_SOCK 2>/dev/null)
 fi
 
+# Set XDG_RUNTIME_DIR if not set, to avoid warnings from some programs, this helps audio in vlc
+if [[ -z "$XDG_RUNTIME_DIR" ]]; then
+	export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+fi
+
 
