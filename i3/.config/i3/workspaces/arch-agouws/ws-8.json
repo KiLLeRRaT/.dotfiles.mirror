@@ -24,7 +24,7 @@
             "percent": 0.5,
             "swallows": [
                {
-                "class": "^Brave\\-browser$",
+                // "class": "^Brave\\-browser$",
                // "instance": "^brave\\-browser$",
                // "machine": "^ganderson$",
                 "title": "^GOUWS\\ MAIN$"
@@ -44,14 +44,14 @@
                "y": 2
             },
             "marks": [],
-            "name": "Sandfield MAIN",
+            "name": "SANDFIELD MAIN",
             "percent": 0.5,
             "swallows": [
                {
-                "class": "^Brave\\-browser$",
+                // "class": "^Brave\\-browser$",
                // "instance": "^brave\\-browser$",
                // "machine": "^ganderson$",
-                "title": "^Sandfield\\ MAIN$"
+                "title": "^SANDFIELD\\ MAIN$"
                // "window_role": "^browser$"
                }
             ],

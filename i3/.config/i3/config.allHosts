@@ -118,8 +118,10 @@ mode passthrough {
 bindsym $mod+g mode "$mode_goto"
 set $mode_goto (m)eeting specific, (M)eeting Google, (p)aste, (P)aste
 mode  "$mode_goto" {
-		bindsym m exec --no-startup-id i3-msg workspace $ws0, exec brave --new-window --profile-directory=Profile\ 1 "$(xclip -o)", mode "default"
-		bindsym Shift+m exec --no-startup-id i3-msg workspace $ws0, exec brave --new-window --profile-directory=Profile\ 1 "https://meet.google.com", mode "default"
+		# bindsym m exec --no-startup-id i3-msg workspace $ws0, exec brave --new-window --profile-directory=Profile\ 1 "$(xclip -o)", mode "default"
+		# bindsym Shift+m exec --no-startup-id i3-msg workspace $ws0, exec brave --new-window --profile-directory=Profile\ 1 "https://meet.google.com", mode "default"
+		bindsym m exec --no-startup-id i3-msg workspace $ws0, exec google-chrome-stable --new-window --profile-directory=Default "$(xclip -o)", mode "default"
+		bindsym Shift+m exec --no-startup-id i3-msg workspace $ws0, exec google-chrome-stable --new-window --profile-directory=Default "https://meet.google.com", mode "default"
 		bindsym Shift+p exec --no-startup-id xclip -o | xclip -selection clipboard, mode "default", exec xdotool key ctrl+v
 		bindsym p exec --no-startup-id xclip -o | xclip -selection clipboard, mode "default"
 		# bindsym p exec --no-startup-id xdotool key ctrl+shift+c, exec --no-startu-id xclip -o | xclip -selection clipboard, mode "default"
@@ -265,8 +267,13 @@ bindsym $mod+Shift+Down move workspace to output down
 
 # workspace back and forth (with/without active container)
 workspace_auto_back_and_forth yes
-bindsym $mod+b workspace back_and_forth
-bindsym $mod+Shift+b move container to workspace back_and_forth; workspace back_and_forth
+# bindsym $mod+b workspace back_and_forth
+# bindsym $mod+Shift+b move container to workspace back_and_forth; workspace back_and_forth
+
+# move to workspace back_and_forth
+bindsym $mod+Tab workspace back_and_forth
+bindsym $mod+Shift+Tab move container to workspace back_and_forth; workspace back_and_forth
+
 
 # split orientation
 bindsym $mod+v split h;exec --no-startup-id notify-send 'tile horizontally'
@@ -361,10 +368,6 @@ bindsym $mod+F7 workspace $ws17
 bindsym $mod+F8 workspace $ws18
 bindsym $mod+F9 workspace $ws19
 
-# move to workspace back_and_forth
-bindsym $mod+Tab workspace back_and_forth
-bindsym $mod+Shift+Tab move container to workspace back_and_forth; workspace back_and_forth
-
 # Move focused container to workspace, and focus new workspace
 bindsym $mod+Shift+1 move container to workspace $ws1; workspace $ws1
 bindsym $mod+Shift+2 move container to workspace $ws2; workspace $ws2
@@ -427,6 +430,7 @@ for_window [class="Timeset-gui"] floating enable border normal
 
 # for_window [title="TimeSheetEntry - Brave$"] floating enable border normal, move position center, resize set 830 800
 for_window [title="TimeSheetEntry - Brave$"] floating enable border normal, move position center, resize set 830 800, sticky enable
+for_window [title="TimeSheetEntry - Google Chrome$"] floating enable border normal, move position center, resize set 830 800, sticky enable
 for_window [title="^Spaces$"] floating enable border normal, move position center, resize set 760 800
 for_window [class="Blueman-manager"] floating enable border normal, resize set 760 450, move position center
 for_window [class="easyeffects"] floating enable border normal, resize set 1410 764, move position center
@@ -866,8 +870,10 @@ exec --no-startup-id i3-msg 'workspace $ws9; append_layout ~/.config/i3/workspac
 
 # exec --no-startup-id i3-msg 'workspace $ws9; append_layout ~/.config/i3/workspaces/arch-agouws/ws-9.json'
 # assign [class="Brave"] $ws8
-exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Default'
-exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Profile\ 1'
+# exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Default'
+# exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Profile\ 1'
+exec --no-startup-id i3-msg 'workspace $ws8; exec google-chrome-stable --profile-directory=Default' # WORK
+exec --no-startup-id i3-msg 'workspace $ws8; exec google-chrome-stable --profile-directory=Profile\ 1' # PERSONAL
 
 exec --no-startup-id i3-msg 'workspace $ws1; exec 1password'
 exec --no-startup-id i3-msg 'workspace $ws1; exec spotify-launcher'
