@@ -22,7 +22,7 @@ RUN pacman -S --noconfirm \
 	python-pip \
 	ranger ripgrep \
 	sshfs stow sudo \
-	tmux \
+	tmux tree-sitter-cli \
 	unzip upterm \
 	vim \
 	wget \
@@ -113,6 +113,9 @@ RUN echo -e "\033[32m Install oh-my-posh\033[0m" && \
 
 RUN echo -e "\033[32m Install NVM\033[0m" && \
 	sudo -u builduser bash -c 'cd ~ && git clone https://aur.archlinux.org/nvm nvm && cd nvm && makepkg -is --noconfirm' # Clone and build a package
+
+RUN echo -e "\033[32m Install Claude Code\033[0m" && \
+	sudo -u builduser bash -c 'cd ~ && git clone https://aur.archlinux.org/claude-code claude-code && cd claude-code && makepkg -is --noconfirm' # Clone and build a package
 
 RUN echo -e "\033[32m Clone zsh-vi-mode\033[0m" && \
 	git clone https://github.com/jeffreytse/zsh-vi-mode.git $HOME/.zsh-vi-mode
