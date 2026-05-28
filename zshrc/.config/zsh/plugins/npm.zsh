@@ -43,13 +43,16 @@ if [ -f $HOME/.config/op/npm-env ] && command -v op >/dev/null 2>&1; then
 
 	# alias npm="op run --account sandfield.1password.com --env-file=$HOME/.config/op/npm-env -- npm --color=always"
 	npm() {
-		if [[ "$1" == "start" ]]; then
-			# Run the regular npm command for start
-			command npm "$@"
-		else
-			# Run the 1Password-wrapped command
+		case "$1" in
+			# Explicitly require auth for commands that hit the private registry
+			"install" | "i" | "ci" | "publish" | "update" | "up" | "outdated" | "audit" | "view" | "info" | "search" | "ping")
 			op run --account sandfield.1password.com --env-file="$HOME/.config/op/npm-env" -- npm --color=always "$@"
-		fi
+			;;
+		*)
+			# Default to bypassing auth for everything else
+			command npm "$@"
+			;;
+		esac
 	}
 
 	alias yarn="op run --account sandfield.1password.com --env-file=$HOME/.config/op/npm-env -- yarn"
