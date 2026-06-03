@@ -47,6 +47,12 @@ plugins = {
 	["SALDOCPROD1"] = servers,
 	["SALDOCDEV1"] = servers,
 	["localhost"] = iphone,
+	["arch-i5-6400"] = {
+		["copilot.lua"] = false,
+		["nvim-dbee"] = false,
+		["vim-dadbod-ui"] = false,
+		["avante.nvim"] = false,
+	},
 	["hppavilion"] = {
 		["copilot.lua"] = false,
 		["nvim-dbee"] = false,
