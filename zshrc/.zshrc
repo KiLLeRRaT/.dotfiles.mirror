@@ -231,6 +231,7 @@ alias df='df -h'
 alias free='free -h'
 alias zramctl-etal='zramctl && echo "" && swapon --show && echo "" && free'
 alias xclip='xclip -selection clipboard'
+alias SSH_AUTH_SOCK_FIX="eval \$(tmux show-env -s SSH_AUTH_SOCK)"
 
 alias db='dotnet build'
 alias dr='dotnet restore'
