@@ -193,6 +193,43 @@ alias chmod="chmod -v"
 alias ncdu="ncdu --color dark"
 alias yay-Syu='yay -Syu --answerdiff All --answerclean None --ignore dracula-icons-git'
 
+# alias gcp="cd \"\$(git rev-parse --show-toplevel)\""
+# Create an alias or function called gcp, and it will cd up though all the parent directories until
+# it finds a directory containing a *.csproj or *.vbproj file.  If it doesn't find one, stop at the
+# git root.  This should be automated and no user interaction
+gcp() {
+  local current_dir="$PWD"
+  local git_root
+
+  # Get the git root directory, suppressing stderr if not in a git repo
+  git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+
+  while [[ "$current_dir" != "/" ]]; do
+    # Look for .csproj or .vbproj files
+    # The (N) is a Zsh glob qualifier that prevents errors if no match is found (nullglob)
+    local proj_files=("$current_dir"/*.csproj(N) "$current_dir"/*.vbproj(N))
+
+    # If the array has elements, we found a project file
+    if (( ${#proj_files[@]} > 0 )); then
+      cd "$current_dir"
+      return 0
+    fi
+
+    # If we reached the git root and didn't find a project file, stop here
+    if [[ -n "$git_root" && "$current_dir" == "$git_root" ]]; then
+      cd "$git_root"
+      return 0
+    fi
+
+    # Move up one directory level
+    current_dir=$(dirname "$current_dir")
+  done
+
+  # Fallback if you run this outside a git repo and no project files exist up to /
+  echo "No .csproj, .vbproj, or git root found." >&2
+  return 1
+}
+
 lst() {
 	# echo $@
 	# echo $(shift $@)
@@ -282,7 +319,7 @@ fd-t() {
 #		fd -t f -g $1 --exec stat --printf='%Y\t%n\n' | sort -nr
 # }
 
-# find most recently modified file matching the name, then open it in nvim, 
+# find most recently modified file matching the name, then open it in nvim,
 # mnemonically neovim-time
 alias n-t="fd-t | cut -f2 | head -1 | xargs --no-run-if-empty -d'\n' nvim"
 alias exiftool-productversion='exiftool -ProductVersion -s3'
