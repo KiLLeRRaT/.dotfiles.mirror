@@ -2,6 +2,14 @@ local function window()
   return vim.api.nvim_win_get_number(0)
 end
 
+-- Show the full value of the dbout cell under the cursor (published by
+-- after/ftplugin/dbout.lua via vim.g.dbout_cell). Only shown in dbout buffers.
+local function dbout_cell()
+  local v = vim.g.dbout_cell
+  if v == nil or v == '' then return '' end
+  return '󰆼 ' .. v
+end
+
 -- LUA LINES, https://github.com/nvim-lualine/lualine.nvim#default-configuration
 local winbar = {
 	{
@@ -21,6 +29,10 @@ require'lualine'.setup {
 		lualine_a = {
 			{ window },
 			{ 'mode', upper = true }
+		},
+		lualine_c = {
+			'filename',
+			{ dbout_cell, cond = function() return vim.bo.filetype == 'dbout' end },
 		}
 	},
 	winbar = {
