@@ -64,11 +64,13 @@ local function parse_cols(sep)
 end
 
 -- Conceal the overflow of wide columns in one row according to `plan`.
---   plan[col_idx] = { limit = N, side = "left"|"right", ellipsis = bool }
+--   plan[col_idx] = { limit = N, side = "left"|"right", ellipsis = false|"inline"|"overlay" }
 -- `side` is the side that gets concealed: "right" keeps the leading chars
 -- (left-aligned text / headers), "left" keeps the trailing chars (right-aligned
--- numerics, so the value stays visible). Records concealed ranges in conceal_map
--- and returns {col_idx -> trimmed_value} for cells whose content exceeds the limit.
+-- numerics, so the value stays visible). `ellipsis`: "inline" inserts a "…" (adds a
+-- display column); "overlay" draws "…" over the last kept char (no width change,
+-- used to flag a header that was clipped while its data fits). Records concealed
+-- ranges in conceal_map and returns {col_idx -> trimmed_value} for overflowing cells.
 local function truncate_row(bufnr, row_0, line, cols, plan)
   local values = {}
   local ranges = {}
@@ -95,11 +97,20 @@ local function truncate_row(bufnr, row_0, line, cols, plan)
           end_col = ce + 1,
           conceal = "",
         })
-        if p.ellipsis then
+        if p.ellipsis == "inline" then
           vim.api.nvim_buf_set_extmark(bufnr, ns, row_0, ell_col, {
             virt_text     = { { "…", "Comment" } },
             virt_text_pos = "inline",
           })
+        elseif p.ellipsis == "overlay" then
+          -- overlay the last kept char so the column width is unchanged
+          local ov = (p.side == "left") and (ce + 1) or (cs - 1)
+          if ov >= col.from then
+            vim.api.nvim_buf_set_extmark(bufnr, ns, row_0, ov, {
+              virt_text     = { { "…", "Comment" } },
+              virt_text_pos = "overlay",
+            })
+          end
         end
         ranges[col_idx] = { cs, ce }
       end
@@ -190,10 +201,13 @@ local function apply_truncation(bufnr)
           limit = math.min(trunc_at(), math.max(vlen, 1))       -- compact: fit value, capped
         end
 
-        local right    = nonempty[col_idx] > 0 and (right_votes[col_idx] * 2 > nonempty[col_idx])
-        local overflow = vlen > limit   -- real data content would be hidden ⇒ show "…"
-        head_plan[col_idx] = { limit = limit, side = "right", ellipsis = overflow }
-        data_plan[col_idx] = { limit = limit, side = right and "left" or "right", ellipsis = overflow }
+        local right       = nonempty[col_idx] > 0 and (right_votes[col_idx] * 2 > nonempty[col_idx])
+        local overflow    = vlen > limit   -- real DATA content hidden ⇒ inline "…" on all rows
+        local header_clip = hlen > limit   -- header text clipped while data fits
+        local head_ell    = (overflow and "inline") or (header_clip and "overlay") or false
+        local data_ell    = overflow and "inline" or false
+        head_plan[col_idx] = { limit = limit, side = "right", ellipsis = head_ell }
+        data_plan[col_idx] = { limit = limit, side = right and "left" or "right", ellipsis = data_ell }
       end
 
       -- Header row (one line above separator)
