@@ -26,6 +26,10 @@ local TOGGLE_KEY = "gz"
 -- Prompts for an absolute (35) or relative (+5 / -5) value. Also :DBoutTruncate.
 local LIMIT_KEY = "gl"
 
+-- Normal-mode keybind (buffer-local) to expand/collapse ALL columns at once.
+-- Also available as :DBoutToggleAllColumns.
+local EXPAND_ALL_KEY = "gZ"
+
 local ns = vim.api.nvim_create_namespace("dbout_truncate")
 
 local float_state    = { win = nil, buf = nil }
@@ -432,6 +436,37 @@ local function toggle_column(bufnr)
   reveal(bufnr)
 end
 
+-- Expand all columns. If every column is already expanded, collapse all instead
+-- (toggle-all, mirrors the gz single-column toggle).
+local function expand_all_columns(bufnr)
+  local cols_seen = {}
+  for _, row_cols in pairs(cols_map[bufnr] or {}) do
+    for _, col in ipairs(row_cols) do
+      cols_seen[col.from] = true
+    end
+  end
+
+  expanded_cols[bufnr] = expanded_cols[bufnr] or {}
+  local all_expanded = true
+  for from in pairs(cols_seen) do
+    if not expanded_cols[bufnr][from] then
+      all_expanded = false
+      break
+    end
+  end
+
+  if all_expanded then
+    expanded_cols[bufnr] = {}
+  else
+    for from in pairs(cols_seen) do
+      expanded_cols[bufnr][from] = true
+    end
+  end
+
+  apply_truncation(bufnr)
+  reveal(bufnr)
+end
+
 -- If the cursor is sitting inside a concealed range, slide it to the last visible
 -- char before that range (used after a live truncation-limit change).
 local function nudge_cursor_out(bufnr)
@@ -598,6 +633,16 @@ if not vim.b.dbout_truncate_init then
   vim.api.nvim_buf_create_user_command(bufnr, "DBoutToggleColumn", function()
     toggle_column(bufnr)
   end, { desc = "Expand/collapse the dbout column under the cursor" })
+
+  vim.keymap.set("n", EXPAND_ALL_KEY, function() expand_all_columns(bufnr) end, {
+    buffer = bufnr,
+    silent = true,
+    desc   = "dbout: expand/collapse all columns",
+  })
+
+  vim.api.nvim_buf_create_user_command(bufnr, "DBoutToggleAllColumns", function()
+    expand_all_columns(bufnr)
+  end, { desc = "Expand/collapse all dbout columns at once" })
 
   vim.keymap.set("n", LIMIT_KEY, function() prompt_truncate(bufnr) end, {
     buffer = bufnr,
