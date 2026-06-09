@@ -138,6 +138,7 @@ local function apply_truncation(bufnr)
   cols_map[bufnr]    = {}
   conceal_map[bufnr] = {}
   local exp          = expanded_cols[bufnr] or {}
+  local win_width    = vim.api.nvim_win_get_width(vim.api.nvim_get_current_win())
 
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   local i = 1
@@ -162,75 +163,85 @@ local function apply_truncation(bufnr)
         end
       end
 
-      -- Per-column analysis of the DATA rows (header excluded): longest value and
-      -- alignment (right-aligned ⇒ values hug the right edge, e.g. numerics).
-      local maxlen, right_votes, nonempty = {}, {}, {}
-      for col_idx = 1, #cols do maxlen[col_idx] = 0; right_votes[col_idx] = 0; nonempty[col_idx] = 0 end
-      for j = dstart, dstop do
-        local dline = lines[j]
-        for col_idx, col in ipairs(cols) do
-          local last = math.min(col.to, #dline - 1)
-          if last >= col.from then
-            local cell    = dline:sub(col.from + 1, last + 1)
-            local trimmed = vim.trim(cell)
-            if #trimmed > maxlen[col_idx] then maxlen[col_idx] = #trimmed end
-            if #trimmed > 0 then
-              nonempty[col_idx] = nonempty[col_idx] + 1
-              if cell:sub(1, 1) == " " then right_votes[col_idx] = right_votes[col_idx] + 1 end
+      -- If the result set's full width fits in the window, skip concealment entirely.
+      -- Still populate cols_map so gz / gZ / hover remain functional.
+      if #lines[i] <= win_width then
+        if sep_row_0 >= 1 and lines[sep_row_0] ~= "" then
+          cols_map[bufnr][sep_row_0 - 1] = cols
+        end
+        cols_map[bufnr][sep_row_0] = cols
+        for j = dstart, dstop do cols_map[bufnr][j - 1] = cols end
+      else
+        -- Per-column analysis of the DATA rows (header excluded): longest value and
+        -- alignment (right-aligned ⇒ values hug the right edge, e.g. numerics).
+        local maxlen, right_votes, nonempty = {}, {}, {}
+        for col_idx = 1, #cols do maxlen[col_idx] = 0; right_votes[col_idx] = 0; nonempty[col_idx] = 0 end
+        for j = dstart, dstop do
+          local dline = lines[j]
+          for col_idx, col in ipairs(cols) do
+            local last = math.min(col.to, #dline - 1)
+            if last >= col.from then
+              local cell    = dline:sub(col.from + 1, last + 1)
+              local trimmed = vim.trim(cell)
+              if #trimmed > maxlen[col_idx] then maxlen[col_idx] = #trimmed end
+              if #trimmed > 0 then
+                nonempty[col_idx] = nonempty[col_idx] + 1
+                if cell:sub(1, 1) == " " then right_votes[col_idx] = right_votes[col_idx] + 1 end
+              end
             end
           end
         end
-      end
 
-      -- Build the per-column truncation plan for header/separator vs data rows.
-      -- By default each column is fitted to its longest DATA value (capped at the
-      -- truncation limit), so short columns and NULL columns no longer carry a wide
-      -- band of trailing padding. Expanding (gz) lifts the cap and also makes room
-      -- for the full header.
-      local header_line = (i >= 2) and lines[i - 1] or ""
-      local head_plan, data_plan = {}, {}
-      for col_idx, col in ipairs(cols) do
-        -- trimmed length of this column's header text
-        local hlen, hlast = 0, math.min(col.to, #header_line - 1)
-        if hlast >= col.from then
-          local hcell = header_line:sub(col.from + 1, hlast + 1)
-          hlen = #(vim.trim(hcell))
+        -- Build the per-column truncation plan for header/separator vs data rows.
+        -- By default each column is fitted to its longest DATA value (capped at the
+        -- truncation limit), so short columns and NULL columns no longer carry a wide
+        -- band of trailing padding. Expanding (gz) lifts the cap and also makes room
+        -- for the full header.
+        local header_line = (i >= 2) and lines[i - 1] or ""
+        local head_plan, data_plan = {}, {}
+        for col_idx, col in ipairs(cols) do
+          -- trimmed length of this column's header text
+          local hlen, hlast = 0, math.min(col.to, #header_line - 1)
+          if hlast >= col.from then
+            local hcell = header_line:sub(col.from + 1, hlast + 1)
+            hlen = #(vim.trim(hcell))
+          end
+
+          local vlen  = maxlen[col_idx]
+          local limit
+          if exp[col.from] then
+            limit = math.max(vlen, hlen, 1)                       -- reveal: full value + header
+          else
+            limit = math.min(trunc_at(), math.max(vlen, 1))       -- compact: fit value, capped
+          end
+
+          local right       = nonempty[col_idx] > 0 and (right_votes[col_idx] * 2 > nonempty[col_idx])
+          local overflow    = vlen > limit   -- real DATA content hidden ⇒ inline "…" on all rows
+          local header_clip = hlen > limit   -- header text clipped while data fits
+          local head_ell    = (overflow and "inline") or (header_clip and "overlay") or false
+          local data_ell    = overflow and "inline" or false
+          head_plan[col_idx] = { limit = limit, side = "right", ellipsis = head_ell }
+          data_plan[col_idx] = { limit = limit, side = right and "left" or "right", ellipsis = data_ell }
         end
 
-        local vlen  = maxlen[col_idx]
-        local limit
-        if exp[col.from] then
-          limit = math.max(vlen, hlen, 1)                       -- reveal: full value + header
-        else
-          limit = math.min(trunc_at(), math.max(vlen, 1))       -- compact: fit value, capped
+        -- Header row (one line above separator)
+        if sep_row_0 >= 1 and lines[sep_row_0] ~= "" then
+          truncate_row(bufnr, sep_row_0 - 1, lines[sep_row_0], cols, head_plan)
+          cols_map[bufnr][sep_row_0 - 1] = cols
         end
 
-        local right       = nonempty[col_idx] > 0 and (right_votes[col_idx] * 2 > nonempty[col_idx])
-        local overflow    = vlen > limit   -- real DATA content hidden ⇒ inline "…" on all rows
-        local header_clip = hlen > limit   -- header text clipped while data fits
-        local head_ell    = (overflow and "inline") or (header_clip and "overlay") or false
-        local data_ell    = overflow and "inline" or false
-        head_plan[col_idx] = { limit = limit, side = "right", ellipsis = head_ell }
-        data_plan[col_idx] = { limit = limit, side = right and "left" or "right", ellipsis = data_ell }
-      end
+        -- Separator row itself
+        truncate_row(bufnr, sep_row_0, lines[i], cols, head_plan)
+        cols_map[bufnr][sep_row_0] = cols
 
-      -- Header row (one line above separator)
-      if sep_row_0 >= 1 and lines[sep_row_0] ~= "" then
-        truncate_row(bufnr, sep_row_0 - 1, lines[sep_row_0], cols, head_plan)
-        cols_map[bufnr][sep_row_0 - 1] = cols
-      end
-
-      -- Separator row itself
-      truncate_row(bufnr, sep_row_0, lines[i], cols, head_plan)
-      cols_map[bufnr][sep_row_0] = cols
-
-      -- Data rows
-      for j = dstart, dstop do
-        local row_0  = j - 1
-        local values = truncate_row(bufnr, row_0, lines[j], cols, data_plan)
-        cols_map[bufnr][row_0] = cols
-        if next(values) then
-          cell_map[bufnr][row_0] = values
+        -- Data rows
+        for j = dstart, dstop do
+          local row_0  = j - 1
+          local values = truncate_row(bufnr, row_0, lines[j], cols, data_plan)
+          cols_map[bufnr][row_0] = cols
+          if next(values) then
+            cell_map[bufnr][row_0] = values
+          end
         end
       end
 
@@ -611,16 +622,37 @@ if not vim.b.dbout_truncate_init then
     })
   end
 
+  -- Re-run when the terminal or a containing split is resized so the fits-in-window
+  -- check is re-evaluated with the new width.
+  vim.api.nvim_create_autocmd("VimResized", {
+    buffer   = bufnr,
+    callback = function()
+      vim.schedule(function() apply_truncation(bufnr) end)
+    end,
+  })
+
+  local win_resize_au = vim.api.nvim_create_autocmd("WinResized", {
+    callback = function()
+      for _, winid in ipairs(vim.v.event.windows or {}) do
+        if vim.api.nvim_win_is_valid(winid) and vim.api.nvim_win_get_buf(winid) == bufnr then
+          vim.schedule(function() apply_truncation(bufnr) end)
+          return
+        end
+      end
+    end,
+  })
+
   vim.api.nvim_create_autocmd("BufDelete", {
     buffer   = bufnr,
     once     = true,
     callback = function()
       cell_map[bufnr]      = nil
       cols_map[bufnr]      = nil
-      conceal_map[bufnr]        = nil
+      conceal_map[bufnr]   = nil
       expanded_cols[bufnr] = nil
       prev_cursor[bufnr]   = nil
       in_jump[bufnr]       = nil
+      pcall(vim.api.nvim_del_autocmd, win_resize_au)
     end,
   })
 
