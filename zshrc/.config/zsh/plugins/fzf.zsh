@@ -43,10 +43,22 @@ fgco() {
 
 # RUN THE COMMAND FROM HISTORY, USING FZF AS SELECTOR
 fh() {
-	cmd=$(history 0 | sort -nr | cut -c 8- | fzf --exact --select-1 --no-sort --query "$1" )
-	if [ -z "$cmd" ]; then
-		return 1
-	fi
+	local selected
+	selected=$(
+		awk '/^: [0-9]+:[0-9]+;/ {
+			rest = substr($0, 3)
+			ts = substr(rest, 1, index(rest, ":") - 1)
+			cmd = substr($0, index($0, ";") + 1)
+			printf "%s\t%s\n", strftime("%Y-%m-%d %H:%M", ts+0), cmd
+		}' "$HISTFILE" |
+		tac |
+		awk -F'\t' '!seen[$2]++' |
+		fzf --exact --select-1 --no-sort --query "$1" \
+			--delimiter=$'\t' \
+			--nth=2
+	)
+	[[ -z "$selected" ]] && return 1
+	local cmd="${selected#*$'\t'}"
 	print -z -- "$cmd"
 }
 
