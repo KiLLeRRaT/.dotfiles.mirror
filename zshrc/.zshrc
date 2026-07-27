@@ -189,6 +189,14 @@ alias mv="mv -v"
 alias cp="cp -v"
 alias rm="rm -v"
 alias chown="chown -v"
+
+# Claude Code downgrades its status line to 256-color when it detects it's inside
+# tmux (via the TMUX env var), which washes out the oh-my-posh truecolor theme.
+# Unset TMUX (and pin TERM_PROGRAM) at launch so it renders full 24-bit truecolor,
+# matching the shell prompt. FORCE_COLOR=3 belt-and-braces. env bypasses this alias
+# (no recursion). NOTE: unsetting TMUX means Claude + its subprocesses can't tell
+# they're in tmux (affects tmux-pane teammate spawning and tmux introspection).
+alias claude="env -u TMUX TERM_PROGRAM=alacritty FORCE_COLOR=3 claude"
 alias chmod="chmod -v"
 alias ncdu="ncdu --color dark"
 alias yay-Syu='yay -Syu --answerdiff All --answerclean None --ignore dracula-icons-git'
@@ -485,6 +493,8 @@ fi
 
 ZVM_VI_ESCAPE_BINDKEY="jk"
 ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT # ZVM_MODE_NORMAL, ZVM_MODE_INSERT, ZVM_MODE_LAST
+ZVM_SYSTEM_CLIPBOARD_ENABLED=true
+ZVM_CLIPBOARD_USE_OSC52=true
 source $HOME/.zsh-vi-mode/zsh-vi-mode.plugin.zsh
 # Offer to install missing package if command is not found
 if [[ -r /usr/share/zsh/functions/command-not-found.zsh ]]; then
@@ -655,4 +665,9 @@ if [[ -z "$XDG_RUNTIME_DIR" ]]; then
 	export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 fi
 
+
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/albert/.lmstudio/bin"
+# End of LM Studio CLI section
 
