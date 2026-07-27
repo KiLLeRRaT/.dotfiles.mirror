@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
+
+shell_integration: true
+console_title_template: "{{if .Root }}Adm:{{end}}{{ .PWD }}"
+palette:
+  black: "#100e23"         # deepest background (python venv text, battery text)
+  bg_highlight: "#3b4261"  # segment surface (root bg, git base bg, path fg)
+  purple: "#c792ea"        # primary accent purple (session/path/tokens bg, git fg)
+  purple_bright: "#906cff" # bright purple (python bg, battery bg)
+  magenta: "#bb9af7"       # tokyonight magenta (claude model bg)
+  gold: "#A57706"          # 5h usage bg
+  pink: "#C61C6F"          # error/exit red-pink (exit bg, git ahead/behind)
+  comment: "#545c7e"       # tokyonight comment grey (git working/staging bg) — renders truecolor now that the claude alias unsets TMUX
+  blue: "#007ACC"          # prompt arrow
+  blue_bright: "#7aa2f7"   # tokyonight blue (5h usage bg)
+  white: "#ffffff"         # generic light fg
+  green: "#9ece6a"         # tokyonight green - battery full
+  orange: "#ff9e64"        # tokyonight orange - battery discharging
+blocks:
+- type: prompt
+  alignment: left
+  segments:
+      # This was added to the prompt to show the current OSC7 value, to help PowerShell know what
+      # the PWD is and to set it correctly when creating splits
+  - type: text
+    style: plain
+    template: "{{ .Env.OSC7 }}"
+  - template: " {{ if gt .Code 0 }} {{ .Meaning }}{{ else }}{{ end }} "
+    foreground: p:white
+    background: p:pink
+    type: exit
+    style: powerline
+  - template: "  "
+    foreground: p:gold
+    powerline_symbol: 
+    background: p:bg_highlight
+    type: root
+    style: powerline
+  - template: " {{ if .WSL }}WSL {{ end }}{{.Icon}} "
+    foreground: p:white
+    powerline_symbol: 
+    background: transparent
+    type: os
+    style: powerline
+  - properties:
+      folder_icon: 
+      style: full
+    template: " {{ if .SSHSession }}{{ .UserName }}@{{ .HostName }} {{ end }}"
+    foreground: p:bg_highlight
+    powerline_symbol: 
+    background: p:purple
+    type: session
+    style: powerline
+  - properties:
+      folder_icon: 
+      mapped_locations:
+        ~/source: 
+        ~/source-aur: a
+        ~/source-g: g
+        ~/source-github: gh
+        ~/source-local: l
+      style: full
+    template: " {{ .Path }} "
+    foreground: p:bg_highlight
+    powerline_symbol: 
+    background: p:purple
+    type: path
+    style: powerline
+  - properties:
+      fetch_stash_count: true
+      fetch_status: true
+      fetch_upstream_icon: false
+    # https://ohmyposh.dev/docs/segments/scm/git
+    template: " {{ .HEAD }} {{ .BranchStatus }}{{ if .Working.Changed }}  {{ .Working.String }}{{ end }}{{ if and (.Staging.Changed) (.Working.Changed) }} |{{ end }}{{ if .Staging.Changed }}  {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0}} 󰆓 {{ .StashCount }}{{ end }}{{ if gt .WorktreeCount 0}}  {{ .WorktreeCount }}{{ end }} "
+    foreground: p:purple
+    powerline_symbol: 
+    background: p:bg_highlight
+    type: git
+    style: powerline
+    foreground_templates:
+    - "{{ if or (.Working.Changed) (.Staging.Changed) }}p:purple{{ end }}"
+    - "{{ if and (gt .Ahead 0) (gt .Behind 0) }}p:white{{ end }}"
+    - "{{ if gt .Ahead 0 }}p:white{{ end }}"
+    - "{{ if gt .Behind 0 }}p:white{{ end }}"
+    background_templates:
+    - "{{ if or (.Working.Changed) (.Staging.Changed) }}p:comment{{ end }}"
+    - "{{ if and (gt .Ahead 0) (gt .Behind 0) }}p:pink{{ end }}"
+    - "{{ if gt .Ahead 0 }}p:pink{{ end }}"
+    - "{{ if gt .Behind 0 }}p:pink{{ end }}"
+  - template: "  {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }} "
+    foreground: p:black
+    powerline_symbol: 
+    background: p:purple_bright
+    type: python
+    style: powerline
+  - template: " {{ .Model.DisplayName }} "
+    foreground: p:bg_highlight
+    powerline_symbol: 
+    background: p:purple
+    type: claude
+    style: powerline
+  - template: " {{ .FormattedTokens }} tok "
+    foreground: p:purple
+    powerline_symbol: 
+    background: p:comment
+    type: claude
+    style: powerline
+  - template: " 5h {{ .RateLimits.FiveHour.UsedPercentage }}% "
+    foreground: p:black
+    powerline_symbol: 
+    background: p:blue_bright
+    type: claude
+    style: powerline
+  - options:
+      charged_icon: "🔌 "
+      charging_icon: "⚡ "
+      discharging_icon: "🔋 "
+    cache:
+      duration: 10m
+      strategy: session
+    template: "{{ if not .Error }} {{ .Icon }}{{ .Percentage }}% {{ end }}"
+    foreground: p:black
+    powerline_symbol: 
+    background: p:purple_bright
+    type: battery
+    style: powerline
+    background_templates:
+    - "{{if eq \"Discharging\" .State.String}}p:orange{{end}}"
+    - "{{if eq \"Full\" .State.String}}p:green{{end}}"
+- type: prompt
+  alignment: left
+  segments:
+  - template: "❯ "
+    foreground: p:blue
+    type: text
+    style: plain
+  newline: true
+version: 4
