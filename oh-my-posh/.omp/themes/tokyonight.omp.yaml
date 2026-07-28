@@ -22,7 +22,8 @@ blocks:
     background: "#3b4261"
     type: root
     style: powerline
-  - template: " {{ if .WSL }}WSL {{ end }}{{.Icon}} "
+  # - template: " {{ if .WSL }}WSL {{ end }}{{.Icon}} "
+  - template: " {{ if .Env.IN_DOCKER }} {{ end }}{{ if .WSL }}WSL {{ end }}{{.Icon}} "
     foreground: "#ffffff"
     powerline_symbol: 
     background: transparent
@@ -31,7 +32,8 @@ blocks:
   - properties:
       folder_icon: 
       style: full
-    template: " {{ if .SSHSession }}{{ .UserName }}@{{ .HostName }} {{ end }}"
+    # template: " {{ if .SSHSession }}{{ .UserName }}@{{ .HostName }} {{ end }}"
+    template: " {{ if or .SSHSession .Env.IN_DOCKER }}{{ .UserName }}@{{ .HostName }} {{ end }}"
     foreground: "#3b4261"
     powerline_symbol: 
     background: "#c792ea"

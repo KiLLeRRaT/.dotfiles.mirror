@@ -1,11 +1,5 @@
 #!/bin/zsh
 
-if [ "$EUID" -ne 0 ]
-	then echo "Please run using sudo"
-	exit
-fi
-
-
 function getParams() {
 	# FROM: https://gist.github.com/mattmc3/804a8111c4feba7d95b6d7b984f12a53
 	local positional=()
@@ -73,7 +67,7 @@ then
 		cache="--no-cache"
 fi
 
-docker compose --progress=plain build --pull $cache --build-arg GIT_EMAIL="$git_email" --build-arg GIT_NAME="$git_name"
+sudo -E docker compose --progress=plain build --pull $cache --build-arg GIT_EMAIL="$git_email" --build-arg GIT_NAME="$git_name"
 
 if [[ $? -ne 0 ]]
 then
@@ -84,7 +78,7 @@ fi
 read -q "REPLY?Do you want to push the image? [y/N] "
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-		docker compose push
+		sudo -E docker compose push
 fi
 
 # LIST IMAGES/REPOS:

@@ -26,3 +26,4 @@ echo "${GREEN}Running nvim again to install TreeSitter parsers${NC}"
 # Had to also do a sync_install for treesitter to work properly, then you just start nvim and it
 # installs correctly without specifically running TSInstall and exits when done.
 nvim --headless +qa
+
