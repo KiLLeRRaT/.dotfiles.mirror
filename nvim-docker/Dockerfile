@@ -29,7 +29,7 @@ RUN pacman -S --noconfirm \
 	socat sshfs stow sudo \
 	tmux tree-sitter-cli \
 	tree \
-	unzip upterm \
+	unzip upterm uv \
 	vim \
 	wget \
 	xclip \
@@ -63,6 +63,14 @@ RUN groupadd --gid $USER_GID devgroup || true && \
 RUN mkdir -p /mnt/c/Projects.Git && \
 	chown -R dev:devgroup /mnt/c/Projects.Git
 
+
+# This is to make use of things like XDG_RUNTIME_DIR
+# Must run as root to create the directory in /run
+USER root
+RUN mkdir -p /run/user/1000 && \
+	chown -R dev:devgroup /run/user/1000 && \
+	chmod 700 /run/user/1000
+
 # Switch all future commands to run as the non-root 'dev' user
 USER dev
 ENV USER=dev
@@ -95,7 +103,8 @@ RUN echo -e "\033[32m Configure Git\033[0m" && \
 	git config --global gpg.ssh.allowedSignersFile /home/dev/.ssh/allowed_signers
 
 RUN echo -e "\033[32m Clone KiLLeRRaT dotfiles\033[0m" && \
-	git clone https://github.com/KiLLeRRaT/.dotfiles /home/dev/.dotfiles
+	# git clone https://github.com/KiLLeRRaT/.dotfiles /home/dev/.dotfiles
+	git clone https://forgejo.gouws.org/albert/.dotfiles.git /home/dev/.dotfiles
 
 WORKDIR /home/dev/.dotfiles
 RUN echo -e "\033[32m Run Stow\033[0m" && \
