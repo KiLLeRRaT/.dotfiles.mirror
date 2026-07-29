@@ -43,6 +43,12 @@ services:
     image: ${DOCKER_REGISTRY:-dockerregistry.gouws.org}/nvim-docker:${IMAGE_TAG:-latest}
     container_name: nvim-docker
     hostname: nvim-docker
+    ports:
+    # Allow 8080-8089, 3100-3109, 5000-5009, 5140-5149
+    - "8080-8089:8080-8089"
+    - "3100-3109:3100-3109"
+    - "5000-5009:5000-5009"
+    - "5140-5149:5140-5149"
     # Explicitly NOT unless-stopped: this is a dev box, it should not come back by
     # itself after a reboot. Matches the old `docker run` (no restart policy).
     restart: "no"
