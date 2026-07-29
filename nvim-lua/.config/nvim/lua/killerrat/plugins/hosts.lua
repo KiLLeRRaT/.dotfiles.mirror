@@ -58,6 +58,10 @@ plugins = {
 		["nvim-dbee"] = false,
 		["vim-dadbod-ui"] = false,
 		["avante.nvim"] = false,
+	},
+	["agouws3"] = {
+		["neorg"] = false,
+		["luarocks.nvim"] = false,
 	}
 }
 return plugins
