@@ -1,28 +1,75 @@
+# nvim-docker - build AND runtime definition.
+#
+# Per-machine values (host paths, registry, timezone, git identity) live in .env
+# next to this file - copy .env.example to .env to get started.
+#
+# Everything here used to be a raw `docker run` in docker-run.sh; the wrapper
+# scripts are now thin shims around compose:
+#   ./docker-build.sh           build + optionally push :latest and the git-SHA tag
+#   ./docker-run.sh             start the container (adds the X11 override if usable)
+#   ./docker-exec.sh            drop into a zsh in the running container
+#   ./docker-stop-and-remove.sh stop + remove the container
+#
+# NOTE: run everything through those scripts rather than calling compose directly.
+# docker-run.sh has to do two things compose cannot: wrap the command in `op run`
+# so NPM_AUTH_TOKEN is injected, and decide at runtime whether X11 is usable.
+name: nvim-docker
+
 services:
-  neovim:
+  nvim-docker:
     build:
       context: .
       dockerfile: Dockerfile
-    # container_name: neovim
-    image: dockerregistry.gouws.org/nvim-docker
-    restart: unless-stopped
+      args:
+        # Must match the host user so the bind-mounted 1Password agent socket and
+        # the X11 peer-credential check both line up. docker-build.sh exports the
+        # real `id -u` / `id -g`; 1000 is only the fallback.
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+        # Baked in at build time (a known design wart, deliberately left alone).
+        # Comes from .env; docker-build.sh --git-email / --git-name override it by
+        # exporting these, and the process environment beats .env.
+        GIT_EMAIL: ${GIT_EMAIL:-}
+        GIT_NAME: ${GIT_NAME:-}
+      # Extra tags produced by `docker compose build` on top of `image:` below.
+      # `docker compose push` pushes these as well as `image:`, which is how the
+      # old version_latest / version_date helper services have been collapsed into
+      # this one service. BUILD_DATE is the git SHA, exported by docker-build.sh;
+      # the :-latest fallback keeps `docker compose config` / `up` quiet when it
+      # is not set (i.e. every time you are running rather than building).
+      tags:
+        - ${DOCKER_REGISTRY:-dockerregistry.gouws.org}/nvim-docker:latest
+        - ${DOCKER_REGISTRY:-dockerregistry.gouws.org}/nvim-docker:${BUILD_DATE:-latest}
+    image: ${DOCKER_REGISTRY:-dockerregistry.gouws.org}/nvim-docker:${IMAGE_TAG:-latest}
+    container_name: nvim-docker
+    hostname: nvim-docker
+    # Explicitly NOT unless-stopped: this is a dev box, it should not come back by
+    # itself after a reboot. Matches the old `docker run` (no restart policy).
+    restart: "no"
+    # `tail -f /dev/null` from the Dockerfile keeps it alive; we exec into it.
+    environment:
+      - TZ=${TZ:-Pacific/Auckland}
+      # Bare, with NO value, on purpose: this forwards NPM_AUTH_TOKEN from the
+      # environment of the process running compose, which is where `op run`
+      # injects it (see docker-run.sh). .env is interpolation-only and can never
+      # put a variable inside the container, so this line is load-bearing.
+      - NPM_AUTH_TOKEN
+      # Container-side path of the socket bind-mounted from HOST_SSH_AGENT_SOCK.
+      - SSH_AUTH_SOCK=/home/dev/.1password/agent.sock
+      - IN_DOCKER=true
     volumes:
-      - /mnt/c/Projects.Git:/mnt/c/Projects.Git
-  version_latest:
-    extends: neovim
-    image: dockerregistry.gouws.org/nvim-docker:latest
-  version_date:
-    extends: neovim
-    image: dockerregistry.gouws.org/nvim-docker:${BUILD_DATE}
+      # Host paths come from .env and must be absolute - do NOT use ${HOME} here,
+      # compose runs under `sudo -E` and may see root's HOME.
+      # Read-write: the agent needs to talk back over this socket.
+      - ${HOST_SSH_AGENT_SOCK:?HOST_SSH_AGENT_SOCK is not set - copy .env.example to .env}:/home/dev/.1password/agent.sock
+      - ${SOURCE_DIR:?SOURCE_DIR is not set - copy .env.example to .env}:/home/dev/source-host:ro
+      - ${NOTES_DIR:?NOTES_DIR is not set - copy .env.example to .env}:/home/dev/notes:ro
+    # X11 (DISPLAY + /tmp/.X11-unix) is deliberately NOT here. It lives in
+    # docker-compose.x11.yaml and is only layered on by docker-run.sh when the X11
+    # socket really exists - see the comments in both of those files.
 
-# RUN WITH:
-# sudo docker stop nvim-docker && sudo docker rm nvim-docker
-# sudo docker compose build && sudo docker compose up -d
-# sudo docker exec -it nvim-docker /bin/zsh
+# LIST IMAGES/REPOS:
+# https://dockerregistry.gouws.org/v2/_catalog
+# https://dockerregistry.gouws.org/v2/nvim-docker/tags/list
 
 # Dockerhub: https://hub.docker.com/r/killerrat/nvim-docker
-# sudo docker run -d --name nvim-docker -v /mnt/c/Projects.Git:/mnt/c/Projects.Git killerrat/nvim-docker:latest
-
-# Albert's private repo:
-# sudo docker run -d --name nvim-docker -v /mnt/c/Projects.Git:/mnt/c/Projects.Git dockerregistry-ro.gouws.org/nvim-docker:latest
-

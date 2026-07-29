@@ -1,0 +1,30 @@
+# X11 clipboard passthrough - OVERRIDE ONLY.
+#
+# This file is layered on top of docker-compose.yaml by docker-run.sh, and ONLY
+# when it has confirmed that the X11 socket for $DISPLAY actually exists:
+#
+#   docker compose -f docker-compose.yaml -f docker-compose.x11.yaml up -d
+#
+# It deliberately does NOT live in the base file. A DISPLAY that is set but
+# non-functional is WORSE than no DISPLAY at all: neovim will pick the xclip
+# provider, xclip will fail to connect, and you get errors instead of a clean
+# fallback to OSC 52. Compose cannot express "only if the socket exists", and the
+# short volume syntax below would silently create /tmp/.X11-unix as an empty
+# directory on a host that has no X server.
+#
+# The matching authorisation step (xhost +SI:localuser) also lives in
+# docker-run.sh - see the long comment there for why we do not mount
+# ~/.Xauthority.
+services:
+  nvim-docker:
+    environment:
+      # Required: DISPLAY must be set and non-empty in the calling environment.
+      # Failing loudly is the whole point - an empty DISPLAY inside the container
+      # is the broken-clipboard case we are trying to avoid.
+      - DISPLAY=${DISPLAY:?DISPLAY must be set - this override file should only be used when X11 is available}
+    volumes:
+      # NOTE: mounted READ-WRITE on purpose (no :ro, unlike the mounts in the
+      # base file). A read-only bind mount of the X socket dir is reported to
+      # break connect() on some setups. The security exposure here is the X
+      # socket itself, not filesystem write access to that directory.
+      - /tmp/.X11-unix:/tmp/.X11-unix
