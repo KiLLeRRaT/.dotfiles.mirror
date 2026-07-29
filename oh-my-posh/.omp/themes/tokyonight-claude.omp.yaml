@@ -13,6 +13,7 @@ palette:
   comment: "#545c7e"       # tokyonight comment grey (git working/staging bg) — renders truecolor now that the claude alias unsets TMUX
   blue: "#007ACC"          # prompt arrow
   blue_bright: "#7aa2f7"   # tokyonight blue (5h usage bg)
+  docker: "#2496ED"        # docker brand blue (container indicator bg)
   white: "#ffffff"         # generic light fg
   green: "#9ece6a"         # tokyonight green - battery full
   orange: "#ff9e64"        # tokyonight orange - battery discharging
@@ -20,11 +21,6 @@ blocks:
 - type: prompt
   alignment: left
   segments:
-      # This was added to the prompt to show the current OSC7 value, to help PowerShell know what
-      # the PWD is and to set it correctly when creating splits
-  - type: text
-    style: plain
-    template: "{{ .Env.OSC7 }}"
   - template: " {{ if gt .Code 0 }} {{ .Meaning }}{{ else }}{{ end }} "
     foreground: p:white
     background: p:pink
@@ -35,6 +31,12 @@ blocks:
     powerline_symbol: 
     background: p:bg_highlight
     type: root
+    style: powerline
+  - template: "{{ if .Env.IN_DOCKER }}  {{ end }}"
+    foreground: p:white
+    powerline_symbol: 
+    background: p:docker
+    type: text
     style: powerline
   - template: " {{ if .WSL }}WSL {{ end }}{{.Icon}} "
     foreground: p:white

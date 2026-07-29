@@ -2,15 +2,14 @@
 
 shell_integration: true
 console_title_template: "{{if .Root }}Adm:{{end}}{{ .PWD }}"
+# Replaces the old `{{ .Env.OSC7 }}` text-segment workaround (oh-my-posh now strips ESC bytes from
+# segment content, so that hack leaked literal text into the prompt). This emits a native OSC 9;9
+# sequence so Windows Terminal tracks the CWD for new tabs/splits.
+pwd: osc99
 blocks:
 - type: prompt
   alignment: left
   segments:
-      # This was added to the prompt to show the current OSC7 value, to help PowerShell know what
-      # the PWD is and to set it correctly when creating splits
-  - type: text
-    style: plain
-    template: "{{ .Env.OSC7 }}"
   - template: " {{ if gt .Code 0 }} {{ .Meaning }}{{ else }}{{ end }} "
     foreground: "#ffffff"
     background: "#C61C6F"
@@ -22,8 +21,14 @@ blocks:
     background: "#3b4261"
     type: root
     style: powerline
+  - template: "{{ if .Env.IN_DOCKER }}  {{ end }}"
+    foreground: "#ffffff"
+    powerline_symbol: 
+    background: "#2496ED"
+    type: text
+    style: powerline
   # - template: " {{ if .WSL }}WSL {{ end }}{{.Icon}} "
-  - template: " {{ if .Env.IN_DOCKER }} {{ end }}{{ if .WSL }}WSL {{ end }}{{.Icon}} "
+  - template: " {{ if .WSL }}WSL {{ end }}{{.Icon}} "
     foreground: "#ffffff"
     powerline_symbol: 
     background: transparent
