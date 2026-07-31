@@ -30,7 +30,16 @@ set -o noclobber
 
 # CASE INSENSITIVE COMPLETION
 # FROM: https://stackoverflow.com/a/69014927/182888
-zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+# zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+#
+# Superseded by the line below. matcher-list elements are tried in order, and each element is a
+# COMPLETE, self-contained match spec -- they do NOT accumulate. So the case-insensitivity of
+# 'm:{a-zA-Z}={A-Za-z}' in element 2 never reached the wildcard/substring elements 3 and 4, which
+# stayed case-sensitive. Result: `cd ~/source/My<TAB>` completed to KR.MyKr.Portal (substring,
+# case matched), and `cd ~/source/kr<TAB>` completed to KR. (case-insensitive prefix), but
+# `cd ~/source/my<TAB>` matched nothing at all.
+# Fix: repeat the case-insensitive spec in EVERY element that needs it.
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'm:{a-zA-Z}={A-Za-z} r:|=*' 'm:{a-zA-Z}={A-Za-z} l:|=* r:|=*'
 autoload -Uz compinit && compinit
 
 
