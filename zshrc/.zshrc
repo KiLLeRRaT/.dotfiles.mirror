@@ -284,12 +284,12 @@ alias rl='source ~/.zshrc'
 alias df='df -h'
 alias free='free -h'
 alias zramctl-etal='zramctl && echo "" && swapon --show && echo "" && free'
-alias xclip='xclip -selection clipboard'
+# alias xclip='xclip -selection clipboard'
 alias SSH_AUTH_SOCK_FIX="eval \$(tmux show-env -s SSH_AUTH_SOCK)"
 
 alias db='dotnet build'
 alias dr='dotnet restore'
-alias xc='xclip -se c'
+# alias xc='xclip -se c'
 
 	# cmd=$(remmina -c $(ls $PWD/* | fzf -e --select-1 --no-sort --query "$1"))
 	# cmd1=$(lssh | fzf --select-1 --query "$1" --height=~50 | cut -f 2)
@@ -562,6 +562,10 @@ fi
 
 if [ -f ~/.config/zsh/plugins/ssh.zsh ]; then
 	source ~/.config/zsh/plugins/ssh.zsh
+fi
+
+if [ -f ~/.config/zsh/plugins/xclip.zsh ]; then
+	source ~/.config/zsh/plugins/xclip.zsh
 fi
 
 if [ -f ~/.config/zsh/plugins/insert-date.zsh ]; then
