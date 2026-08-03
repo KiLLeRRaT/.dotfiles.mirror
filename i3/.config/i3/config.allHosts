@@ -839,10 +839,11 @@ exec --no-startup-id i3-msg 'workspace $ws9; append_layout ~/.config/i3/workspac
 
 # exec --no-startup-id i3-msg 'workspace $ws9; append_layout ~/.config/i3/workspaces/arch-agouws/ws-9.json'
 # assign [class="Brave"] $ws8
-# exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Default'
-# exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Profile\ 1'
+exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Default' # PERSONAL
+# exec --no-startup-id i3-msg 'workspace $ws8; exec brave --profile-directory=Profile\ 1' # WORK
+
 exec --no-startup-id i3-msg 'workspace $ws8; exec google-chrome-stable --profile-directory=Default' # WORK
-exec --no-startup-id i3-msg 'workspace $ws8; exec google-chrome-stable --profile-directory=Profile\ 1' # PERSONAL
+# exec --no-startup-id i3-msg 'workspace $ws8; exec google-chrome-stable --profile-directory=Profile\ 1' # PERSONAL
 
 exec --no-startup-id i3-msg 'workspace $ws1; exec 1password'
 exec --no-startup-id i3-msg 'workspace $ws1; exec spotify-launcher'
