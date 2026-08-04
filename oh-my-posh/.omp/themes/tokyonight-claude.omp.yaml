@@ -113,22 +113,22 @@ blocks:
     background: p:blue_bright
     type: claude
     style: powerline
-  - options:
-      charged_icon: "🔌 "
-      charging_icon: "⚡ "
-      discharging_icon: "🔋 "
-    cache:
-      duration: 10m
-      strategy: session
-    template: "{{ if not .Error }} {{ .Icon }}{{ .Percentage }}% {{ end }}"
-    foreground: p:black
-    powerline_symbol: 
-    background: p:purple_bright
-    type: battery
-    style: powerline
-    background_templates:
-    - "{{if eq \"Discharging\" .State.String}}p:orange{{end}}"
-    - "{{if eq \"Full\" .State.String}}p:green{{end}}"
+  # - options:
+  #     charged_icon: "🔌 "
+  #     charging_icon: "⚡ "
+  #     discharging_icon: "🔋 "
+  #   cache:
+  #     duration: 10m
+  #     strategy: session
+  #   template: "{{ if not .Error }} {{ .Icon }}{{ .Percentage }}% {{ end }}"
+  #   foreground: p:black
+  #   powerline_symbol: 
+  #   background: p:purple_bright
+  #   type: battery
+  #   style: powerline
+  #   background_templates:
+  #   - "{{if eq \"Discharging\" .State.String}}p:orange{{end}}"
+  #   - "{{if eq \"Full\" .State.String}}p:green{{end}}"
 - type: prompt
   alignment: left
   segments:
