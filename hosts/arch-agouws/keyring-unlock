@@ -1,0 +1,140 @@
+#!/bin/sh
+
+# REMEMBER THAT WE MASKED (DISABLED) THE GNOME KEYRING DAEMON.
+# systemctl --user mask --now gnome-keyring-daemon.service gnome-keyring-daemon.socket
+#
+# ENABLE IT AGAIN USING
+# systemctl --user unmask --now gnome-keyring-daemon.service gnome-keyring-daemon.socket
+#
+# Looks like PAM/D-Bus should own this unit or something like that, otherwise it has no DISPLAY and
+# cannot prompt for a password.
+
+# Stop systemd from owning it:
+# systemctl --user mask --now gnome-keyring-daemon.service gnome-keyring-daemon.socket
+
+# Make sure it worked, it should list masked, masked:
+# systemctl --user is-enabled gnome-keyring-daemon.service gnome-keyring-daemon.socket
+
+# Confirm no daemon is left:
+# pgrep -af gnome-keyring-daemon
+
+# Step 3. Restart the stuck apps
+# Close Brave, Chrome and Spotify, then start one of them. It will D-Bus-activate a fresh daemon, and because DISPLAY=:0 and XAUTHORITY are now in the activation environment, gcr-prompter will actually appear. Enter your YubiKey-derived keyring password at the prompt.
+
+# Confirm the right daemon took over:
+# pgrep -af gnome-keyring-daemon
+# Expect --start --foreground --components=secrets (D-Bus activated), not a --control-directory form (systemd unit).
+
+# Step 4. After your next reboot, check it held
+# journalctl --user -b | rg -i 'cannot open display|create system prompt'
+# Empty output means the prompter no longer dies. You should get a normal unlock prompt shortly after login.
+
+# Unlock the GNOME login keyring using a YubiKey HMAC-SHA1 challenge-response.
+#
+# Runs from i3 via exec_always, so it must be a safe no-op on re-run.
+#
+# Startup race: at boot the greeter session is torn down and the user session
+# created in the same instant, and logind re-applies the udev "uaccess" ACL to
+# the YubiKey USB node while this script is already running. During that window
+# libusb cannot open the device and ykchalresp fails with
+# "USB error: No such device". Hence two rules below:
+#   1. retry the challenge-response for a bounded window, and
+#   2. never pkill an existing daemon until we hold a response that can
+#      actually replace it.
+
+# --- SUPERSEDES THE TWO PARAGRAPHS ABOVE (kept for history) ---------------
+#
+# Rule 2 above is now inverted: we kill FIRST. Journal analysis showed that at
+# boot a gnome-keyring-daemon starts before the user logs in (systemd user
+# lingering). Something requests secrets pre-login, gcr-prompter is activated,
+# finds no X display and dies -- and that daemon then never prompts again. It
+# silently hangs every Secret Service client (Brave, Chrome, Spotify) for the
+# whole session, so by the time i3 starts it is worse than useless.
+#
+# i3 launches the browsers in the same instant as this script (measured:
+# browsers 11:42:02, old script killed the daemon at 11:42:06 -> browsers had
+# already bound to the doomed daemon and hung permanently). So the poisoned
+# daemon must be killed immediately, before those launches can bind to it.
+#
+# Rule 1 still holds: ykchalresp can transiently fail ("USB error: No such
+# device") while udev/logind re-apply the "uaccess" ACL to the YubiKey USB
+# node, so the challenge-response is retried for a short bounded window. The
+# window is deliberately short (~5s) to minimise the gap between the two kills.
+#
+# A second pkill runs immediately before handover: during the retry window a
+# client may have D-Bus-activated a competing daemon owning
+# org.freedesktop.secrets, and our --login daemon must own that name.
+#
+# If no valid response is obtained we restore nothing and leave NO daemon
+# running. That is deliberate and correct: the next client D-Bus-activates a
+# fresh one via /usr/share/dbus-1/services/org.freedesktop.secrets.service,
+# and post-login that daemon can put up a normal unlock prompt.
+#
+# Runs from i3 via exec_always, so it must stay a safe no-op on re-run -- the
+# pgrep --login guard below provides that idempotency.
+# --------------------------------------------------------------------------
+
+LOG=/tmp/keyring-unlock.log
+umask 077
+exec 2>>"$LOG"
+echo "=== $(date) ===" >&2
+set -x
+
+YKCHALRESP=/usr/bin/ykchalresp      # verify with: command -v ykchalresp
+CHALLENGE=gnome-keyring
+MAX_ATTEMPTS=10                     # 10 attempts x 0.5s ~= 5s budget
+RETRY_DELAY=0.5
+
+# A daemon started with --login is ours; anything else (D-Bus activated,
+# PAM, systemd) has no login-keyring context and must be replaced.
+if ! pgrep -af gnome-keyring-daemon | grep -q -- --login; then
+
+    # Kill first: whatever is running is the poisoned pre-login daemon, and
+    # i3 is launching the browsers right now. Get rid of it before they bind.
+    echo "keyring-unlock: removing pre-login gnome-keyring-daemon" >&2
+    pkill -f gnome-keyring-daemon
+    sleep 0.5
+
+    set +x                          # keep the response out of the log
+    resp=
+    attempt=1
+    while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
+        echo "keyring-unlock: challenge-response attempt $attempt/$MAX_ATTEMPTS" >&2
+        try=$("$YKCHALRESP" -2 "$CHALLENGE" 2>/dev/null | tr -d '\r\n')
+        if printf '%s' "$try" | grep -Eq '^[0-9a-f]{40}$'; then
+            resp=$try
+            try=
+            echo "keyring-unlock: valid response on attempt $attempt" >&2
+            break
+        fi
+        try=
+        attempt=$((attempt + 1))
+        if [ "$attempt" -le "$MAX_ATTEMPTS" ]; then
+            sleep "$RETRY_DELAY"
+        fi
+    done
+    unset try
+
+    # A client may have D-Bus-activated a competing daemon while we retried;
+    # it would own org.freedesktop.secrets instead of our --login daemon.
+    if [ -n "$resp" ]; then
+        echo "keyring-unlock: clearing any daemon started during the retry window" >&2
+        pkill -f gnome-keyring-daemon
+        sleep 0.2
+        printf '%s' "$resp" | gnome-keyring-daemon --daemonize --login
+        ok=yes
+    else
+        ok=no
+    fi
+    resp=
+    unset resp
+    set -x
+
+    [ "$ok" = yes ] || echo "keyring-unlock: no valid YubiKey response after $MAX_ATTEMPTS attempts; leaving daemon unstarted for D-Bus activation to handle" >&2
+fi
+
+# Runs regardless, so a missing YubiKey still leaves a working (locked)
+# daemon that prompts normally rather than no daemon at all.
+eval "$(gnome-keyring-daemon --start --components=pkcs11,secrets)"
+export GNOME_KEYRING_CONTROL
+dbus-update-activation-environment --systemd GNOME_KEYRING_CONTROL

@@ -812,7 +812,7 @@ exec --no-startup-id pipewire-pulse
 exec --no-startup-id emote # ctrl + alt + e
 # </config>
 # <config hostname="arch-agouws">
-# exec_always --no-startup-id ~/.local/bin/keyring-unlock
+# exec_always --no-startup-id ~/.local/bin/keyring-unlock # NOW IN ~/.xsession
 
 set $screenleft DP-0
 set $screenmiddle HDMI-1
