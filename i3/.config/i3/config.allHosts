@@ -985,10 +985,15 @@ exec_always --no-startup-id sleep 3;setxkbmap -option ctrl:nocaps -option "termi
 exec --no-startup-id blueman-applet
 exec_always --no-startup-id dunst
 # RESTORE LAYOUTS
-exec --no-startup-id i3-msg 'workspace $ws2; append_layout ~/.config/i3/workspaces/arch-agouwsmacbookpro/workspace-2.json'
-exec --no-startup-id i3-msg 'workspace $ws8; append_layout ~/.config/i3/workspaces/arch-agouwsmacbookpro/workspace-8.json'
-exec "brave --profile-directory=Default"
-exec "alacritty -e tmux"
+exec --no-startup-id i3-msg 'workspace $ws2; append_layout ~/.config/i3/workspaces/arch-agouwsmacbookpro/ws-2.json'
+exec --no-startup-id i3-msg 'workspace $ws4; append_layout ~/.config/i3/workspaces/arch-agouwsmacbookpro/ws-4.json'
+exec --no-startup-id i3-msg 'workspace $ws8; append_layout ~/.config/i3/workspaces/arch-agouwsmacbookpro/ws-8.json'
+
+exec --no-startup-id "1password"
+exec --no-startup-id "brave --profile-directory=Default"
+# exec --no-startup-id "alacritty -e tmux"
+# exec --no-startup-id "alacritty -e zsh -c 'tmux a || tmux'"
+exec --no-startup-id alacritty --hold --command zsh -lc 'tmux new-session -A -s Work'
 
 bindsym XF86MonBrightnessUp exec --no-startup-id "~/.dotfiles/hosts/arch-macbookpro13/set-brightness.sh +5"
 bindsym XF86MonBrightnessDown exec --no-startup-id "~/.dotfiles/hosts/arch-macbookpro13/set-brightness.sh -5"

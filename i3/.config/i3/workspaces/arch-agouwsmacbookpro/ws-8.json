@@ -1,16 +1,11 @@
 // vim:ts=4:sw=4:et:ft=jsonc
 {
     "border": "pixel",
+	"layout": "tabbed",
     "current_border_width": 1,
     "floating": "auto_off",
-    "geometry": {
-       "height": 741,
-       "width": 1366,
-       "x": 0,
-       "y": 0
-    },
     "marks": [],
-    "name": "How To Use bash For Loop In One Line - nixCraft - Brave",
+    "name": "Brave",
     "percent": 1,
     "swallows": [
        {
