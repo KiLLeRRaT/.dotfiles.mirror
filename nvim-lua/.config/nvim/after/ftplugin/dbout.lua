@@ -30,16 +30,27 @@ local LIMIT_KEY = "gl"
 -- Also available as :DBoutToggleAllColumns.
 local EXPAND_ALL_KEY = "gZ"
 
+-- Whether a fresh result set arrives compact (wide columns concealed, each fitted to
+-- its longest data value and capped at the truncation limit) or fully revealed.
+-- Flip to true and output arrives unconcealed; gZ then collapses it.
+local START_EXPANDED = true
+
 local ns = vim.api.nvim_create_namespace("dbout_truncate")
 
 local float_state    = { win = nil, buf = nil }
 local cell_map       = {}   -- [bufnr][row_0] = {col_idx -> full_value}  (data rows only)
 local cols_map       = {}   -- [bufnr][row_0] = cols[]                    (ALL truncated rows)
 local conceal_map         = {}   -- [bufnr][row_0] = {col_idx -> {cs, ce}}  concealed byte ranges
-local expanded_cols  = {}   -- [bufnr] = { [col.from] = true }  columns the user expanded
+local expanded_cols  = {}   -- [bufnr] = { [col.from] = true|false }  nil ⇒ START_EXPANDED
 local last_hover     = {}   -- [winid] = {row_0, col_idx}  debounce
 local prev_cursor    = {}   -- [bufnr] = {row_0, col_0}    direction detection
 local in_jump        = {}   -- [bufnr] = bool               re-entry guard
+
+local function is_expanded(bufnr, from)
+  local s = (expanded_cols[bufnr] or {})[from]
+  if s == nil then return START_EXPANDED end
+  return s
+end
 
 local function close_float()
   if float_state.win and vim.api.nvim_win_is_valid(float_state.win) then
@@ -137,7 +148,6 @@ local function apply_truncation(bufnr)
   cell_map[bufnr]    = {}
   cols_map[bufnr]    = {}
   conceal_map[bufnr] = {}
-  local exp          = expanded_cols[bufnr] or {}
   local win_width    = vim.api.nvim_win_get_width(vim.api.nvim_get_current_win())
 
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
@@ -209,7 +219,7 @@ local function apply_truncation(bufnr)
 
           local vlen  = maxlen[col_idx]
           local limit
-          if exp[col.from] then
+          if is_expanded(bufnr, col.from) then
             limit = math.max(vlen, hlen, 1)                       -- reveal: full value + header
           else
             limit = math.min(trunc_at(), math.max(vlen, 1))       -- compact: fit value, capped
@@ -433,11 +443,7 @@ local function toggle_column(bufnr)
   if not target then return end
 
   expanded_cols[bufnr] = expanded_cols[bufnr] or {}
-  if expanded_cols[bufnr][target.from] then
-    expanded_cols[bufnr][target.from] = nil
-  else
-    expanded_cols[bufnr][target.from] = true
-  end
+  expanded_cols[bufnr][target.from] = not is_expanded(bufnr, target.from)
 
   apply_truncation(bufnr)
   -- Park the cursor at the column start so it isn't stranded inside a region
@@ -457,22 +463,17 @@ local function expand_all_columns(bufnr)
     end
   end
 
-  expanded_cols[bufnr] = expanded_cols[bufnr] or {}
   local all_expanded = true
   for from in pairs(cols_seen) do
-    if not expanded_cols[bufnr][from] then
+    if not is_expanded(bufnr, from) then
       all_expanded = false
       break
     end
   end
 
-  if all_expanded then
-    expanded_cols[bufnr] = {}
-  else
-    for from in pairs(cols_seen) do
-      expanded_cols[bufnr][from] = true
-    end
-  end
+  expanded_cols[bufnr] = expanded_cols[bufnr] or {}
+  local want = not all_expanded
+  for from in pairs(cols_seen) do expanded_cols[bufnr][from] = want end
 
   apply_truncation(bufnr)
   reveal(bufnr)
