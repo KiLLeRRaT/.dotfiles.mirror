@@ -35,21 +35,27 @@ local EXPAND_ALL_KEY = "gZ"
 -- Flip to true and output arrives unconcealed; gZ then collapses it.
 local START_EXPANDED = true
 
+-- When a result set is too wide to render raw, but WOULD fit once every column is
+-- fitted to its longest value, start it expanded rather than compact. Decides the
+-- default per result set; START_EXPANDED is used instead when this is false.
+local AUTO_EXPAND_IF_FITS = true
+
 local ns = vim.api.nvim_create_namespace("dbout_truncate")
 
 local float_state    = { win = nil, buf = nil }
 local cell_map       = {}   -- [bufnr][row_0] = {col_idx -> full_value}  (data rows only)
 local cols_map       = {}   -- [bufnr][row_0] = cols[]                    (ALL truncated rows)
 local conceal_map         = {}   -- [bufnr][row_0] = {col_idx -> {cs, ce}}  concealed byte ranges
-local expanded_cols  = {}   -- [bufnr] = { [col.from] = true|false }  nil ⇒ START_EXPANDED
+local expanded_cols  = {}   -- [bufnr] = { [col.from] = true|false }  nil ⇒ block default, else START_EXPANDED
 local last_hover     = {}   -- [winid] = {row_0, col_idx}  debounce
 local prev_cursor    = {}   -- [bufnr] = {row_0, col_0}    direction detection
 local in_jump        = {}   -- [bufnr] = bool               re-entry guard
 
-local function is_expanded(bufnr, from)
+local function is_expanded(bufnr, from, cols)
   local s = (expanded_cols[bufnr] or {})[from]
-  if s == nil then return START_EXPANDED end
-  return s
+  if s ~= nil then return s end
+  if cols and cols.expand_default ~= nil then return cols.expand_default end
+  return START_EXPANDED
 end
 
 local function close_float()
@@ -148,7 +154,11 @@ local function apply_truncation(bufnr)
   cell_map[bufnr]    = {}
   cols_map[bufnr]    = {}
   conceal_map[bufnr] = {}
-  local win_width    = vim.api.nvim_win_get_width(vim.api.nvim_get_current_win())
+  -- nvim_win_get_width includes the number/sign gutter; textoff is its width, so
+  -- subtracting it gives the columns actually available for text.
+  local winid        = vim.api.nvim_get_current_win()
+  local wininfo      = vim.fn.getwininfo(winid)[1]
+  local win_width    = vim.api.nvim_win_get_width(winid) - ((wininfo and wininfo.textoff) or 0)
 
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   local i = 1
@@ -208,18 +218,31 @@ local function apply_truncation(bufnr)
         -- band of trailing padding. Expanding (gz) lifts the cap and also makes room
         -- for the full header.
         local header_line = (i >= 2) and lines[i - 1] or ""
+
+        -- Trimmed header length per column, and the width this block would render at
+        -- if every column were expanded to fit its longest value and full header.
+        local hlens, fitted = {}, #lines[i]
+        for col_idx, col in ipairs(cols) do
+          local h, hlast = 0, math.min(col.to, #header_line - 1)
+          if hlast >= col.from then
+            h = #(vim.trim(header_line:sub(col.from + 1, hlast + 1)))
+          end
+          hlens[col_idx] = h
+          local full = math.max(maxlen[col_idx], h, 1)
+          fitted = fitted - math.max(0, (col.to - col.from + 1) - full)
+        end
+
+        if AUTO_EXPAND_IF_FITS then
+          cols.expand_default = fitted <= win_width
+        end
+
         local head_plan, data_plan = {}, {}
         for col_idx, col in ipairs(cols) do
-          -- trimmed length of this column's header text
-          local hlen, hlast = 0, math.min(col.to, #header_line - 1)
-          if hlast >= col.from then
-            local hcell = header_line:sub(col.from + 1, hlast + 1)
-            hlen = #(vim.trim(hcell))
-          end
+          local hlen = hlens[col_idx]
 
           local vlen  = maxlen[col_idx]
           local limit
-          if is_expanded(bufnr, col.from) then
+          if is_expanded(bufnr, col.from, cols) then
             limit = math.max(vlen, hlen, 1)                       -- reveal: full value + header
           else
             limit = math.min(trunc_at(), math.max(vlen, 1))       -- compact: fit value, capped
@@ -443,7 +466,7 @@ local function toggle_column(bufnr)
   if not target then return end
 
   expanded_cols[bufnr] = expanded_cols[bufnr] or {}
-  expanded_cols[bufnr][target.from] = not is_expanded(bufnr, target.from)
+  expanded_cols[bufnr][target.from] = not is_expanded(bufnr, target.from, cols)
 
   apply_truncation(bufnr)
   -- Park the cursor at the column start so it isn't stranded inside a region
@@ -459,13 +482,13 @@ local function expand_all_columns(bufnr)
   local cols_seen = {}
   for _, row_cols in pairs(cols_map[bufnr] or {}) do
     for _, col in ipairs(row_cols) do
-      cols_seen[col.from] = true
+      cols_seen[col.from] = row_cols
     end
   end
 
   local all_expanded = true
-  for from in pairs(cols_seen) do
-    if not is_expanded(bufnr, from) then
+  for from, c in pairs(cols_seen) do
+    if not is_expanded(bufnr, from, c) then
       all_expanded = false
       break
     end
