@@ -1,6 +1,30 @@
 # THIS IS NEEDED FOR GIT TAB COMPLETION
 Import-Module posh-git
 
+# PSFzf provides Invoke-FzfTabCompletion (bound to Ctrl+t below). Guarded so the
+# profile doesn't error on machines where the module isn't installed
+# (install with: Install-Module PSFzf -Scope CurrentUser).
+if (Get-Module -ListAvailable -Name PSFzf) {
+  Import-Module PSFzf
+}
+
+# IDEA FROM: https://github.com/JanDeDobbeleer/oh-my-posh/issues/2515#issuecomment-1374322136
+# then remove the "pwd": "osc7" from the omp.json and add the following as the first element in the segments field.
+# {
+# 	"type": "text",
+# 	"style": "plain",
+# 	"template": "{{ .Env.OSC7 }}"
+# },
+function Set-EnvVar {
+  $loc = $executionContext.SessionState.Path.CurrentLocation;
+
+  $out = ""
+  if ($loc.Provider.Name -eq "FileSystem") {
+    $out += "$([char]27)]9;9;`"$($loc.ProviderPath)`"$([char]27)\"
+  }
+	$env:OSC7 = $out
+}
+New-Alias -Name 'Set-PoshContext' -Value 'Set-EnvVar' -Scope Global -Force
 oh-my-posh init pwsh --config ~/.omp/themes/tokyonight.omp.yaml | Invoke-Expression
 
 # $Host.UI.RawUI.WindowTitle = "$pwd"
@@ -10,8 +34,16 @@ oh-my-posh init pwsh --config ~/.omp/themes/tokyonight.omp.yaml | Invoke-Express
 Set-PSReadlineOption -EditMode vi
 # Set-PSReadLineKeyHandler -Key j,k -Function ViCommandMode
 
-# zsh-style menu completion: completes common prefix, then shows inline menu (Tab/Shift-Tab to cycle)
+# Zsh-style completion (mirrors `zstyle ':completion:*' menu select` in .zshrc).
+# MenuComplete completes to the longest common prefix, then shows an INTERACTIVE
+# menu of matches below the prompt that you navigate with the arrow keys / Tab
+# (Shift+Tab navigates backwards within the menu automatically) and accept with
+# Enter -- instead of PowerShell's default TabCompleteNext, which just cycles the
+# matches inline one at a time. Path completion is case-insensitive by default,
+# matching zsh's matcher-list; for zsh-style fuzzy/substring matching use the fzf
+# trigger on Ctrl+t below (the equivalent of `**<TAB>` in zsh).
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+# Show parameter tooltips alongside the completion menu (like zsh's description format).
 Set-PSReadLineOption -ShowToolTips
 Set-PSReadLineKeyHandler -Key Ctrl+r -Function ReverseSearchHistory
 
@@ -70,3 +102,8 @@ Invoke-Expression (& {
 		$hook = if ($PSVersionTable.PSVersion.Major -lt 6) { 'prompt' } else { 'pwd' }
 		(zoxide init --hook $hook powershell | Out-String)
 })
+
+# fzf fuzzy completion on Ctrl+t, kept SEPARATE from Tab -- this mirrors zsh,
+# where normal Tab is menu-select and fzf is its own trigger (`**<TAB>`). Leaving
+# this on Tab would hijack every completion into the fzf selector.
+Set-PSReadLineKeyHandler -Key Ctrl+t -ScriptBlock { Invoke-FzfTabCompletion }
