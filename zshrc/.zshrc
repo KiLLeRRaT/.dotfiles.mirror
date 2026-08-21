@@ -198,6 +198,7 @@ alias mv="mv -v"
 alias cp="cp -v"
 alias rm="rm -v"
 alias chown="chown -v"
+alias cd..="cd .."
 
 # Claude Code downgrades its status line to 256-color when it detects it's inside
 # tmux (via the TMUX env var), which washes out the oh-my-posh truecolor theme.
@@ -209,6 +210,7 @@ alias claude="env -u TMUX TERM_PROGRAM=alacritty FORCE_COLOR=3 claude"
 alias chmod="chmod -v"
 alias ncdu="ncdu --color dark"
 alias yay-Syu='yay -Syu --answerdiff All --answerclean None --ignore dracula-icons-git'
+alias glow='glow -p'
 
 # alias gcp="cd \"\$(git rev-parse --show-toplevel)\""
 # Create an alias or function called gcp, and it will cd up though all the parent directories until
