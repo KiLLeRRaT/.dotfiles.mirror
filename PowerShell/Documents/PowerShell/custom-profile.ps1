@@ -1,13 +1,18 @@
 # Portable: every external tool/module is guarded so this loads anywhere.
 
-# posh-git: needs the git binary at import.
-if ((Get-Command git -ErrorAction SilentlyContinue) -and (Get-Module -ListAvailable -Name posh-git)) {
-  Import-Module posh-git
-}
-
-# PSFzf: Import-Module THROWS if the fzf binary isn't on PATH.
-if ((Get-Command fzf -ErrorAction SilentlyContinue) -and (Get-Module -ListAvailable -Name PSFzf)) {
-  Import-Module PSFzf
+# posh-git: import is ~1.3s. oh-my-posh already renders git status in the
+# prompt, so posh-git is only here for git tab completion. Defer that cost by
+# registering a stub completer for `git` that imports posh-git on first use.
+# Importing posh-git re-registers this completer with its own, so the import
+# happens exactly once; we delegate that first invocation to posh-git directly.
+if (Get-Command git -ErrorAction SilentlyContinue) {
+  Register-ArgumentCompleter -Native -CommandName git -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+    Import-Module posh-git -ErrorAction SilentlyContinue
+    if (Get-Command Expand-GitCommand -ErrorAction SilentlyContinue) {
+      Expand-GitCommand $commandAst.Extent.Text
+    }
+  }
 }
 
 # OSC7 for oh-my-posh, see: https://github.com/JanDeDobbeleer/oh-my-posh/issues/2515#issuecomment-1374322136
@@ -36,8 +41,17 @@ if (Get-Command Set-PSReadLineKeyHandler -ErrorAction SilentlyContinue) {
   Set-PSReadLineOption -ShowToolTips
   Set-PSReadLineKeyHandler -Key Ctrl+r -Function ReverseSearchHistory
 
-  if (Get-Command Invoke-FzfTabCompletion -ErrorAction SilentlyContinue) {
-    Set-PSReadLineKeyHandler -Key Ctrl+t -ScriptBlock { Invoke-FzfTabCompletion }
+  # PSFzf: import is ~0.9s and only needed for the Ctrl+t fuzzy completer, so
+  # load it on first press. Importing PSFzf may rebind Ctrl+t to its own default,
+  # so re-assert our binding afterwards, then run the completion for this press.
+  if (Get-Command fzf -ErrorAction SilentlyContinue) {
+    Set-PSReadLineKeyHandler -Key Ctrl+t -ScriptBlock {
+      Import-Module PSFzf -ErrorAction SilentlyContinue
+      if (Get-Command Invoke-FzfTabCompletion -ErrorAction SilentlyContinue) {
+        Set-PSReadLineKeyHandler -Key Ctrl+t -ScriptBlock { Invoke-FzfTabCompletion }
+        Invoke-FzfTabCompletion
+      }
+    }
   }
 }
 
