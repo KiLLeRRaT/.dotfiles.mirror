@@ -55,6 +55,25 @@ if (Get-Command Set-PSReadLineKeyHandler -ErrorAction SilentlyContinue) {
   }
 }
 
+# Substring ("contains") directory completion for cd/pushd, like zsh's matcher-list
+# (e.g. `cd Orca<Tab>` completes TIL.Orca). -Force includes dotdirs (zsh globdots).
+$SubstringDirCompleter = {
+  param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+  $word   = $wordToComplete.Trim("'`"")
+  $parent = Split-Path -Path $word -Parent
+  $leaf   = Split-Path -Path $word -Leaf
+  $searchDir = if ([string]::IsNullOrEmpty($parent)) { '.' } else { $parent }
+  Get-ChildItem -LiteralPath $searchDir -Directory -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "*$leaf*" } |
+    Sort-Object Name |
+    ForEach-Object {
+      $path = if ([string]::IsNullOrEmpty($parent)) { $_.Name } else { Join-Path $parent $_.Name }
+      $text = if ($path -match '\s') { "'$path'" } else { $path }
+      [System.Management.Automation.CompletionResult]::new($text, $_.Name, 'ProviderContainer', $_.FullName)
+    }
+}
+Register-ArgumentCompleter -CommandName cd, sl, Set-Location, pushd, Push-Location -ParameterName Path -ScriptBlock $SubstringDirCompleter
+
 # Remove gl/gp/gm so our git.bat helpers win (only if present, else errors).
 foreach ($a in 'gl', 'gp', 'gm') {
   if (Get-Alias $a -ErrorAction SilentlyContinue) { Remove-Alias -Force -Name $a }
