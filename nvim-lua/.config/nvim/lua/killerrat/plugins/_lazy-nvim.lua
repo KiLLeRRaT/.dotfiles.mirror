@@ -127,34 +127,36 @@ local lazyPlugins = {
 	-- 		-- See Commands section for default commands if you want to lazy load on them
 	-- 	},
 	-- },
-	{
-		"https://github.com/yetone/avante.nvim",
-		event = "VeryLazy",
-		lazy = false,
-		version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
-		build = "make",
-		cond = pluginCondForHost,
-		dependencies = {
-			"https://github.com/stevearc/dressing.nvim",
-			"https://github.com/nvim-lua/plenary.nvim",
-			"https://github.com/MunifTanjim/nui.nvim",
-			--- The below dependencies are optional,
-			-- "echasnovski/mini.pick", -- for file_selector provider mini.pick
-			"https://github.com/nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-			"https://github.com/hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-			"https://github.com/ibhagwan/fzf-lua", -- for file_selector provider fzf
-			"https://github.com/nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-			"https://github.com/zbirenbaum/copilot.lua", -- for providers='copilot'
-			-- {
-			-- 	-- Make sure to set this up properly if you have lazy=true
-			-- 	'MeanderingProgrammer/render-markdown.nvim',
-			-- 	opts = {
-			-- 		file_types = { "markdown", "Avante" },
-			-- 	},
-			-- 	ft = { "markdown", "Avante" },
-			-- },
-		},
-	},
+
+	-- DISABLED ON Tue 1 Sep 2026 13:09
+	-- {
+	-- 	"https://github.com/yetone/avante.nvim",
+	-- 	event = "VeryLazy",
+	-- 	lazy = false,
+	-- 	version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
+	-- 	build = "make",
+	-- 	cond = pluginCondForHost,
+	-- 	dependencies = {
+	-- 		"https://github.com/stevearc/dressing.nvim",
+	-- 		"https://github.com/nvim-lua/plenary.nvim",
+	-- 		"https://github.com/MunifTanjim/nui.nvim",
+	-- 		--- The below dependencies are optional,
+	-- 		-- "echasnovski/mini.pick", -- for file_selector provider mini.pick
+	-- 		"https://github.com/nvim-telescope/telescope.nvim", -- for file_selector provider telescope
+	-- 		"https://github.com/hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
+	-- 		"https://github.com/ibhagwan/fzf-lua", -- for file_selector provider fzf
+	-- 		"https://github.com/nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
+	-- 		"https://github.com/zbirenbaum/copilot.lua", -- for providers='copilot'
+	-- 		-- {
+	-- 		-- 	-- Make sure to set this up properly if you have lazy=true
+	-- 		-- 	'MeanderingProgrammer/render-markdown.nvim',
+	-- 		-- 	opts = {
+	-- 		-- 		file_types = { "markdown", "Avante" },
+	-- 		-- 	},
+	-- 		-- 	ft = { "markdown", "Avante" },
+	-- 		-- },
+	-- 	},
+	-- },
 
 	-- " SWITCH TO OPPOSITE WORD, E.G. TRUE -> FALSE, etc.
 	{ 'https://github.com/AndrewRadev/switch.vim' },
