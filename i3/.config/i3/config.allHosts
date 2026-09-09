@@ -202,17 +202,21 @@ exec --no-startup-id dunstctl rule dnd disable
 #	REGION="screen${SCREEN}"
 #fi
 
-## Launch the screenshot gui
-# flameshot gui --region "$REGION"
+
+# FLAMESHOT
+# -------------------------
+# Capute active window only, alt + Print
+# BUGGY!
+# bindsym $mod+Print exec --no-startup-id "eval $(xdotool getactivewindow getwindowgeometry --shell);REGION=${WIDTH}x${HEIGHT}+${X}+${Y}; flameshot screen --region $REGION -p ~/Pictures/screenshots/ -c"
+# bindsym $mod+Print exec --no-startup-id "eval $(xdotool getactivewindow getwindowgeometry --shell);REGION=${WIDTH}x${HEIGHT}+${X}+${Y}; flameshot gui --region $REGION -p ~/Pictures/screenshots/ -c"
+# Capture entire active screen
+bindsym Print exec --no-startup-id "flameshot screen -p ~/Pictures/screenshots/ -c"
+# Capture region
+bindsym Ctrl+Print exec --no-startup-id "flameshot gui"
+# OCR region
+bindsym Ctrl+Shift+Print exec --no-startup-id "flameshot gui --raw | tesseract stdin stdout | xclip -in -selection clipboard"
 # -------------------------
 
-bindsym Print exec --no-startup-id "eval $(xdotool getactivewindow getwindowgeometry --shell);REGION=${WIDTH}x${HEIGHT}+${X}+${Y}; flameshot full --region $REGION -p ~/Pictures/screenshots/ -c"
-bindsym Ctrl+Print exec --no-startup-id "flameshot gui"
-bindsym Ctrl+Shift+Print exec --no-startup-id "flameshot gui --raw | tesseract stdin stdout | xclip -in -selection clipboard"
-# bindsym $mod+F4 exec --no-startup-id "eval $(xdotool getactivewindow getwindowgeometry --shell);REGION=${WIDTH}x${HEIGHT}+${X}+${Y}; flameshot full --region $REGION -p ~/Pictures/screenshots/ -c"
-bindsym $mod+Ctrl+F4 exec --no-startup-id "flameshot gui"
-
-#bindsym $mod+Shift+h exec xdg-open /usr/share/doc/manjaro/i3_help.pdf
 bindsym $mod+Ctrl+x --release exec --no-startup-id xkill
 
 # # mnemonic: l for language
