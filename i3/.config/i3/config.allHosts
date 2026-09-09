@@ -119,9 +119,11 @@ bindsym $mod+g mode "$mode_goto"
 set $mode_goto (m)eeting specific, (M)eeting Google, (p)aste, (P)aste
 mode  "$mode_goto" {
 		# bindsym m exec --no-startup-id i3-msg workspace $ws0, exec brave --new-window --profile-directory=Profile\ 1 "$(xclip -o)", mode "default"
+		bindsym m exec --no-startup-id i3-msg workspace $ws0 && google-chrome-stable --new-window --profile-directory=Default "$(xclip -o)", mode "default"
+
 		# bindsym Shift+m exec --no-startup-id i3-msg workspace $ws0, exec brave --new-window --profile-directory=Profile\ 1 "https://meet.google.com", mode "default"
-		bindsym m exec --no-startup-id i3-msg workspace $ws0, exec google-chrome-stable --new-window --profile-directory=Default "$(xclip -o)", mode "default"
-		bindsym Shift+m exec --no-startup-id i3-msg workspace $ws0, exec google-chrome-stable --new-window --profile-directory=Default "https://meet.google.com", mode "default"
+		bindsym Shift+m exec --no-startup-id i3-msg workspace $ws0 && google-chrome-stable --new-window --profile-directory=Default "https://meet.google.com", mode "default"
+
 		bindsym Shift+p exec --no-startup-id xclip -o | xclip -selection clipboard, mode "default", exec xdotool key ctrl+v
 		bindsym p exec --no-startup-id xclip -o | xclip -selection clipboard, mode "default"
 		# bindsym p exec --no-startup-id xdotool key ctrl+shift+c, exec --no-startu-id xclip -o | xclip -selection clipboard, mode "default"
