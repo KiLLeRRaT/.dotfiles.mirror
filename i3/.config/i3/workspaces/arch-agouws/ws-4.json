@@ -14,7 +14,8 @@
     "percent": 1,
     "swallows": [
        {
-        "class": "^1[Pp]assword$"
+        // "class": "1[Pp]assword$"
+        "class": "com.onepassword.OnePassword"
        // "instance": "^1password$",
        // "machine": "^ganderson$",
        // "title": "^All\\ Accounts\\ \\—\\ All\\ Items\\ \\—\\ 1Password$",
