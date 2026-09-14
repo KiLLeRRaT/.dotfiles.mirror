@@ -90,7 +90,7 @@
 					"percent": 0.25,
 					"swallows": [
 						{
-							"class": "^google\\-chat\\-linux$",
+							"class": "^google\\-chat\\-linux$"
 							// "instance": "^google\\-chat\\-linux$",
 							// "machine": "^arch\\-agouws$",
 							// "title": "^Kaitlyn\\ Chessum\\ messaged\\ you\\ \\-\\ Chat$",
@@ -161,7 +161,7 @@
 					"percent": 0.25,
 					"swallows": [
 						{
-							"class": "^Signal$"
+							"class": "^[Ss]ignal$"
 							// "title": "^Signal$"
 						}
 					],
