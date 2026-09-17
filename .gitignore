@@ -18,3 +18,4 @@ ssh/.ssh/*
 nerd-dictation/.config/nerd-dictation/model/
 fonts/.fonts/.uuid
 nvim-docker/.env
+.serena/project.yml
