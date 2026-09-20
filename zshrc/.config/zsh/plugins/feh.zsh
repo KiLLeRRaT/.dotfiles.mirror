@@ -4,8 +4,9 @@ feh-screenshots() {
 		--scale-down \
 		-d \
 		-S mtime \
-		--action1 ';xclip -selection clipboard -t image/png -i %F' \
-		--action2 ';echo %F | xclip -i -selection clipboard' \
+		--action1 ';[Copy image]xclip -selection clipboard -t image/png -i %F' \
+		--action2 ';[Copy path]echo %F | xclip -i -selection clipboard' \
+		--action9 '[Delete image]rm %F' \
 		--draw-actions \
 		~/Pictures/screenshots
 }
