@@ -26,10 +26,10 @@ default_floating_border normal
 # Hide borders
 hide_edge_borders none
 
-# change borders
-bindsym $mod+Ctrl+u border none
-bindsym $mod+Ctrl+y border pixel 1
-bindsym $mod+Ctrl+n border normal
+# # change borders
+# bindsym $mod+Ctrl+u border none
+# bindsym $mod+Ctrl+y border pixel 1
+# bindsym $mod+Ctrl+n border normal
 
 
 # Use Mouse+$mod to drag floating windows
@@ -472,13 +472,14 @@ bindsym $mod+Shift+r restart
 
 # Set shut down, restart and locking features
 # bindsym Mod4+l exec --no-startup-id i3exit lock, mode "default"
+set $lock_cmd betterlockscreen --lock blur --off 300
 bindsym $mod+u mode "$mode_system"
 set $mode_system (l)ock, (e)xit, switch_(u)ser, (s)uspend, (h)ibernate, (r)eboot, (Shift+s)hutdown
 # set $mode_system (l)ock, (e)xit, switch_(u)ser, (s)uspend, (r)eboot, (Shift+s)hutdown
 mode "$mode_system" {
 		# bindsym l exec --no-startup-id i3exit lock, mode "default"
-		bindsym l exec --no-startup-id betterlockscreen --lock blur, mode "default"
-
+		# bindsym l exec --no-startup-id betterlockscreen --lock blur, mode "default"
+		bindsym l exec --no-startup-id "$lock_cmd", mode "default"
 		# bindsym s exec --no-startup-id i3exit suspend, mode "default"
 		# CHANGED TO THIS NEWER COMMAND ON 24 Feb 2026 for T570
 		bindsym s exec --no-startup-id systemctl sleep, mode "default"
@@ -539,7 +540,8 @@ exec --no-startup-id nm-applet
 
 # exec --no-startup-id xautolock -time 10 -locker "betterlockscreen --lock blur" -corners 000-
 # exec --no-startup-id xautolock -time 10 -locker "$HOME/.dotfiles/xautolock/xautolock.sh && betterlockscreen --lock blur" -corners 000-
-exec --no-startup-id xautolock -time 10 -locker "$HOME/.dotfiles/xautolock/xautolock.sh && betterlockscreen --lock blur"
+# exec --no-startup-id xautolock -time 10 -locker "$HOME/.dotfiles/xautolock/xautolock.sh && betterlockscreen --lock blur"
+exec --no-startup-id xautolock -time 10 -locker "$HOME/.dotfiles/xautolock/xautolock.sh && $lock_cmd"
 
 # Enable MPRIS support for media keys/players, this keeps track of the last active player
 # SEE: https://wiki.archlinux.org/title/MPRIS
@@ -888,6 +890,8 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "~/.dotfiles/hosts/arch-delll
 # </config>
 
 # <config hostname="arch-delllatitude">
+set $lock_cmd sh -c 'betterlockscreen --lock blur --off 60 & sleep 1; dm-tool switch-to-greeter; wait'
+
 font xft:SF Pro Display 11
 # FROM: https://github.com/betterlockscreen/betterlockscreen
 exec --no-startup-id feh --randomize --bg-fill ~/.dotfiles/images/*; sleep 1; picom -b
