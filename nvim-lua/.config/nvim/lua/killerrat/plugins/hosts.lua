@@ -43,6 +43,7 @@ plugins = {
 	["sierradelta"] = sierradeltaPlugins,
 	["proxmox-i7-2600k"] = servers,
 	["proxmox-backup-server"] = servers,
+	["proxmox-backup-server4"] = servers,
 	["kiosk-1"] = servers,
 	["SALDOCPROD1"] = servers,
 	["SALDOCDEV1"] = servers,
