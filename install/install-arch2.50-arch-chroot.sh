@@ -93,6 +93,8 @@ installAurPackage brave-bin
 # installAurPackage dotnet-runtime-bin
 # installAurPackage dotnet-sdk-bin
 
+
+
 arch-chroot2 /bin/bash -l -- <<- EOF
 	curl -sS https://downloads.1password.com/linux/keys/1password.asc | gpg --import
 	echo Need to make sure gnome-keyring is correctly setup otherwise 2fa keys wont be remembered.
@@ -146,6 +148,11 @@ installAurPackage i3lock-color
 arch-chroot /mnt pacman -Sy --noconfirm --needed imagemagick i3-wm
 installAurPackage i3exit
 installAurPackage betterlockscreen
+
+installAurPackage yay-bin
+arch-chroot2 yay -Y --gendb
+arch-chroot2 yay -Syu --devel
+arch-chroot2 yay -Y --devel --save
 
 arch-chroot2 /bin/bash -l -- <<- EOF
 	betterlockscreen -u ~/.dotfiles/images
