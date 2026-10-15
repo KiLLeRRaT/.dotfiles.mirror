@@ -248,7 +248,8 @@ sed -i.bak 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/g' /etc/sudoer
 
 echo "Cloning dotfiles"
 pushd /home/$username
-git clone https://github.com/killerrat/.dotfiles
+# git clone https://github.com/killerrat/.dotfiles
+git clone https://forgejo.gouws.org/albert/.dotfiles
 popd
 
 

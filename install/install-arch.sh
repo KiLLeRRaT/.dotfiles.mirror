@@ -183,7 +183,7 @@ if [ "$clone_dotfiles" == "y" ]; then
 		git pull
 		popd
 	else
-		git clone https://github.com/killerrat/.dotfiles
+		git clone https://forgejo.gouws.org/albert/.dotfiles
 	fi
 		popd
 fi

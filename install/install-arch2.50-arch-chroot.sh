@@ -49,7 +49,7 @@ echo -e "${GREEN}Creating xdg-user-dirs${RESET}" # FOR 1Password download dir an
 arch-chroot2 xdg-user-dirs-update
 
 echo -e "${GREEN}Cloning dotfiles${RESET}"
-arch-chroot -u $USERNAME /mnt git clone https://github.com/killerrat/.dotfiles /home/$USERNAME/.dotfiles
+arch-chroot -u $USERNAME /mnt git clone https://forgejo.gouws.org/albert/.dotfiles /home/$USERNAME/.dotfiles
 
 echo -e "${GREEN}Generating host config${RESET}"
 arch-chroot2 /home/$USERNAME/.dotfiles/nvim-lua/.config/nvim/generateHostConfig.sh
