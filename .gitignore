@@ -15,6 +15,7 @@ ssh/.ssh/*
 !ssh/.ssh/config
 !ssh/.ssh/allowed_signers
 !ssh/.ssh/*.pub
+!ssh/.ssh/rc
 nerd-dictation/.config/nerd-dictation/model/
 fonts/.fonts/.uuid
 nvim-docker/.env

@@ -1,0 +1,10 @@
+#!/bin/sh
+# git gpg.ssh.program wrapper.
+# - SSH'd in with a forwarded agent (see ~/.ssh/rc): sign with ssh-keygen through the forwarded
+#   agent, so 1Password + YubiKey prompt on the machine you're sitting at.
+# - Otherwise: 1Password's op-ssh-sign, as before.
+fwd="$HOME/.ssh/agent-forwarded.sock"
+if [ -S "$fwd" ]; then
+	SSH_AUTH_SOCK="$fwd" exec ssh-keygen "$@"
+fi
+exec /opt/1Password/op-ssh-sign "$@"
