@@ -1,3 +1,4 @@
+local p = "nvim-treesitter"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- MIGRATED TO main BRANCH (2026-04)
 -- Old wiki: https://github.com/nvim-treesitter/nvim-treesitter/wiki/Installation
 -- playground removed: use built-in :InspectTree instead

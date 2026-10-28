@@ -259,9 +259,10 @@ local lazyPlugins = {
 		'https://github.com/nvim-treesitter/nvim-treesitter',
 		branch = 'main',
 		build = ':TSUpdate',
+		cond = pluginCondForHost,
 	},
 
-	{ "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
+	{ "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", branch = "main", cond = pluginCondForHost },
 	{ 'https://github.com/rmagatti/goto-preview' },
 
 	-- STICKY HEADERS/FUNCTIONS AT THE TOP OF THE WINDOW WHEN SCROLLING

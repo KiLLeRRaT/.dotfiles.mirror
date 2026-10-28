@@ -47,6 +47,10 @@ plugins = {
 	["kiosk-1"] = servers,
 	["SALDOCPROD1"] = servers,
 	["SALDOCDEV1"] = servers,
+	["SALAZAGENTS01"] = vim.tbl_extend("force", servers, {
+		["nvim-treesitter"] = false,
+		["nvim-treesitter-textobjects"] = false,
+	}),
 	["localhost"] = iphone,
 	["arch-i5-6400"] = {
 		["copilot.lua"] = false,
