@@ -1,3 +1,4 @@
+local p = "tokyonight.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require("tokyonight").setup({
   style = "storm", -- The theme comes in three styles, `storm`, a darker variant `night` and `day`
   light_style = "day", -- The theme is used when the background is set to light

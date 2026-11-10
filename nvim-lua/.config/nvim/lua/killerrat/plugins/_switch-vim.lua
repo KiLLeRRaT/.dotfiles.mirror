@@ -1,3 +1,4 @@
+local p = "switch.vim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- " FROM: https://github.com/AndrewRadev/switch.vim
 -- " keybinding is gs
 

@@ -1,3 +1,4 @@
+local p = "nerdtree"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 vim.g.NERDTreeShowLineNumbers = 1
 vim.g.NERDTreeShowHidden = 1
 

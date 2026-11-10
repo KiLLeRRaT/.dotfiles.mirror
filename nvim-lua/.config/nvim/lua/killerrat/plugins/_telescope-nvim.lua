@@ -1,3 +1,4 @@
+local p = "telescope.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 local p = require("telescope")
 local actions = require "telescope.actions"
 

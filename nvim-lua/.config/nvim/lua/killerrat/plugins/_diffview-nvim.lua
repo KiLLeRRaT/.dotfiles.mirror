@@ -1,3 +1,4 @@
+local p = "diffview.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 local actions = require("diffview.actions")
 
 require("diffview").setup({

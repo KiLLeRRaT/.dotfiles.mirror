@@ -1,3 +1,4 @@
+local p = "vim-fugitive"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 vim.keymap.set("n", "<leader>gs", ":Git<cr>")
 vim.keymap.set("n", "<leader>gS", ":Git pull<cr>:Git push<cr>")
 vim.keymap.set("n", "<leader>gp", ":Git push<cr>")

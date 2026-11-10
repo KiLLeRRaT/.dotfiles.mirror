@@ -1,3 +1,4 @@
+local p = "conform.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 local p = require("conform")
 -- print("Loading conform-nvim")
 

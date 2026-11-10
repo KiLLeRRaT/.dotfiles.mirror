@@ -1,3 +1,4 @@
+local p = "better-escape.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require("better_escape").setup {
 		timeout = vim.o.timeoutlen,
 		default_mappings = false,

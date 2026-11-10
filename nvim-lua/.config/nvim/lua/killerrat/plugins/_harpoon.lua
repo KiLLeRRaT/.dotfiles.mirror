@@ -1,3 +1,4 @@
+local p = "harpoon"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- local ui = require("harpoon.ui")
 -- local mark = require("harpoon.mark")
 

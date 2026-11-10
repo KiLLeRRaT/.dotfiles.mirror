@@ -1,4 +1,5 @@
--- REMEMBER TO SET THE cond ON THE LOADING OF THE PLUGIN OTHERWISE THIS DOESNT HAVE ANY EFFECT
+-- Every plugin honours this table via `defaults.cond` in _lazy-nvim.lua; :KillerratPlugins shows
+-- the outcome. The startup prompt and scripts/nvim-plugins may add entries via hosts_edit.lua.
 
 local servers = {
 	["neorg"] = false,

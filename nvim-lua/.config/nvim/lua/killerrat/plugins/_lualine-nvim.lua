@@ -1,3 +1,4 @@
+local p = "lualine.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 local function window()
   return vim.api.nvim_win_get_number(0)
 end

@@ -1,3 +1,4 @@
+local p = "nvim-cmp"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 
 local lsp_symbols = {
 	Text = " 	(Text) ",

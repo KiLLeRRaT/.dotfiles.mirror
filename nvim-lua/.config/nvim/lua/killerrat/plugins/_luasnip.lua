@@ -1,3 +1,4 @@
+local p = "LuaSnip"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 local ls = require("luasnip")
 local extras = require("luasnip.extras")
 -- local s = ls.snippet

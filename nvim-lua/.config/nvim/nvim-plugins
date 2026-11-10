@@ -1,0 +1,103 @@
+#!/usr/bin/env zsh
+# Check, list, enable or disable Neovim plugins per host (lua/killerrat/plugins/hosts.lua).
+set -euo pipefail
+
+usage() {
+	cat <<'EOF'
+usage: nvim-plugins <command> [options]
+
+commands:
+  check                  load the full config headless as HOST, print :KillerratPlugins,
+                         exit 1 if any module failed
+  list                   print HOST's overrides from hosts.lua (plugin -> true/false)
+  enable  <plugin>       set plugins[HOST][plugin] = true  in hosts.lua
+  disable <plugin>       set plugins[HOST][plugin] = false in hosts.lua
+
+options:
+  --host H               hostname to act as (default: $HOST, else `hostname`)
+  --hosts-file F         hosts.lua to read/edit (default: <this script's dir>/lua/killerrat/plugins/hosts.lua)
+  --nvim-arg ARG         extra argument passed verbatim to nvim (repeatable; check only)
+  -h, --help             this text
+EOF
+}
+
+die() {
+	print -u2 -- "nvim-plugins: $*"
+	exit 2
+}
+
+# This script lives in the nvim config dir (next to generateHostConfig.sh); :A resolves the
+# stow symlink so the repo checkout is used.
+scriptdir=${0:A:h}
+host=${HOST:-$(hostname)}
+hostsfile=$scriptdir/lua/killerrat/plugins/hosts.lua
+nvimargs=()
+cmd=""
+plugin=""
+
+while (( $# > 0 )); do
+	case $1 in
+		-h|--help) usage; exit 0 ;;
+		--host) [[ $# -ge 2 ]] || die "--host needs a value"; host=$2; shift 2 ;;
+		--hosts-file) [[ $# -ge 2 ]] || die "--hosts-file needs a value"; hostsfile=$2; shift 2 ;;
+		--nvim-arg) [[ $# -ge 2 ]] || die "--nvim-arg needs a value"; nvimargs+=("$2"); shift 2 ;;
+		-*) usage >&2; die "unknown option: $1" ;;
+		*)
+			if [[ -z $cmd ]]; then cmd=$1
+			elif [[ -z $plugin ]]; then plugin=$1
+			else usage >&2; die "unexpected argument: $1"
+			fi
+			shift ;;
+	esac
+done
+
+[[ -n $cmd ]] || { usage >&2; exit 2; }
+
+# Names are interpolated into Lua string literals below, so keep them plain.
+name_re='^[A-Za-z0-9._-]+$'
+[[ $host =~ $name_re ]] || die "invalid host name: $host"
+hostsfile=${hostsfile:a}
+[[ -f $hostsfile ]] || die "hosts file not found: $hostsfile"
+
+# <cfg>/lua/killerrat/plugins/hosts.lua -> <cfg>; fall back to this script's config dir when
+# the hosts file is a copy that lives elsewhere (hosts_edit.lua must be on the runtimepath).
+cfgdir=${hostsfile:h:h:h:h}
+[[ -f $cfgdir/lua/killerrat/plugins/hosts_edit.lua ]] || cfgdir=$scriptdir
+
+# Run Lua against hosts_edit only (no config, no plugins), so this works even when the
+# config is broken. `cquit` makes nvim exit 1 on failure.
+edit_nvim() {
+	nvim --headless -u NONE -i NONE --cmd "set rtp^=$cfgdir" -c "lua $1" -c "qa!"
+}
+
+case $cmd in
+	check)
+		# The host override must run before the config loads, hence --cmd.
+		nvim --headless -i NONE \
+			--cmd "lua vim.g.killerrat_plugin_prompt = false" \
+			--cmd "lua (vim.uv or vim.loop).os_gethostname = function() return '$host' end" \
+			"${nvimargs[@]}" \
+			-c "lua io.stdout:write(vim.api.nvim_exec2('KillerratPlugins', { output = true }).output, '\n')" \
+			-c "lua if #require('killerrat.plugins.loader').failures() > 0 then vim.cmd.cquit() end" \
+			-c "qa!"
+		;;
+	list)
+		edit_nvim "
+			local t = require('killerrat.plugins.hosts_edit').list('$host', { path = [==[$hostsfile]==] })
+			local names = vim.tbl_keys(t)
+			table.sort(names)
+			if #names == 0 then io.stdout:write('$host: no overrides (every plugin enabled)\n') end
+			for _, n in ipairs(names) do io.stdout:write(('%-32s %s\n'):format(n, tostring(t[n]))) end"
+		;;
+	enable|disable)
+		[[ -n $plugin ]] || { usage >&2; die "$cmd needs a <plugin>"; }
+		[[ $plugin =~ $name_re ]] || die "invalid plugin name: $plugin"
+		enabled=true
+		[[ $cmd == disable ]] && enabled=false
+		edit_nvim "
+			local ok, msg = require('killerrat.plugins.hosts_edit').set('$host', '$plugin', $enabled, { path = [==[$hostsfile]==] })
+			if ok then io.stdout:write(msg, '\n') else io.stderr:write('nvim-plugins: ', msg, '\n') vim.cmd.cquit() end"
+		;;
+	*)
+		usage >&2; die "unknown command: $cmd" ;;
+esac

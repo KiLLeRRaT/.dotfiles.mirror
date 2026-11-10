@@ -1,3 +1,4 @@
+local p = "nvim-ts-context-commentstring"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require('ts_context_commentstring').setup {
 	enable_autocmd = false,
 	languages = {

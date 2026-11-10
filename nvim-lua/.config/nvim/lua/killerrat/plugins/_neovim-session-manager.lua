@@ -1,3 +1,4 @@
+local p = "neovim-session-manager"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 local Path = require('plenary.path')
 require('session_manager').setup({
   sessions_dir = Path:new(vim.fn.stdpath('data'), 'sessions'), -- The directory where the session files will be saved.

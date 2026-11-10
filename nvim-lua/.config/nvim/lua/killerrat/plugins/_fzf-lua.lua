@@ -1,3 +1,4 @@
+local p = "fzf-lua"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- imap <c-x><c-f> <plug>(fzf-complete-path)
 -- vim.keymap.set("i", "<C-x><C-f>", "<plug>(fzf-complete-path)")
 

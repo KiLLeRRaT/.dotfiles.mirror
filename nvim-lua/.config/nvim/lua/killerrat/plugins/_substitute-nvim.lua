@@ -1,3 +1,4 @@
+local p = "substitute.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require("substitute").setup {
 	on_substitute = nil,
 	yank_substituted_text = false,

@@ -1,3 +1,4 @@
+local p = "whitespace.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require('whitespace-nvim').setup({
 	-- configuration options and their defaults
 

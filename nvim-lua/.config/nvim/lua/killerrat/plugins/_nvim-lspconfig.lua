@@ -1,3 +1,4 @@
+local p = "nvim-lspconfig"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- require'lspconfig'.bashls.setup{}
 vim.lsp.config('bashls', {})
 

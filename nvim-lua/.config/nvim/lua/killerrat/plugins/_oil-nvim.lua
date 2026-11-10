@@ -1,3 +1,4 @@
+local p = "oil.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require("oil").setup({
 	-- -- Set to false if you still want to use netrw.
   -- default_file_explorer = true

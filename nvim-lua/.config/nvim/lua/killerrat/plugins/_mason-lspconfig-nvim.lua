@@ -1,3 +1,4 @@
+local p = "mason-lspconfig.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- local omnisharp_version = "@v1.39.11"
 local lsp_installer_ensure_installed = {
 	-- LSP

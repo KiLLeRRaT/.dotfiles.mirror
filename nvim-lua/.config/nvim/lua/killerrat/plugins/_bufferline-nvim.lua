@@ -1,3 +1,4 @@
+local p = "bufferline.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require'bufferline'.setup {
 	options = {
 		diagnostics = "nvim_lsp",

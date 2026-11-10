@@ -1,3 +1,4 @@
+local p = "gitsigns.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- " GIT SIGNS: https://github.com/lewis6991/gitsigns.nvim
 require('gitsigns').setup{
 	on_attach = function(bufnr)

@@ -1,3 +1,4 @@
+local p = "vimwiki"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- DEPRECATED IN FAV OF NEORG
 -- DEPRECATED IN FAV OF NEORG
 -- DEPRECATED IN FAV OF NEORG

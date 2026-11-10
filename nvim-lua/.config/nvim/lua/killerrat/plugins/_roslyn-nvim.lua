@@ -1,3 +1,4 @@
+local p = "roslyn.nvim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 vim.lsp.config('roslyn', {
 	-- handlers = require 'rzls.roslyn_handlers',
 	on_attach = function (client, bufnr)

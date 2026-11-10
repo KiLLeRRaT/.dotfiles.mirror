@@ -11,10 +11,24 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- The per-host table. `vim.g.killerrat_hosts_path` points at a different file (a fixture) for
+-- testing; hosts_edit.path() honours the same variable, so prompt -> write -> restart round-trips.
+local hostnamePlugins
+local function hostsTable()
+	if hostnamePlugins == nil then
+		local override = vim.g.killerrat_hosts_path
+		if type(override) == "string" and override ~= "" then
+			hostnamePlugins = dofile(override)
+		else
+			hostnamePlugins = require("killerrat.plugins.hosts")
+		end
+	end
+	return hostnamePlugins
+end
+
 local pluginCondForHost = function(plugin)
 	local hostname = vim.loop.os_gethostname()
-	local hostnamePlugins = require("killerrat.plugins.hosts")
-	local hp = hostnamePlugins[hostname]
+	local hp = hostsTable()[hostname]
 
 	if (hp == nil) then return true end
 	local enabled = hp[plugin.name]
@@ -111,7 +125,6 @@ local lazyPlugins = {
 	{ "https://github.com/zbirenbaum/copilot.lua",
 	  cmd = "Copilot",
 		event = "InsertEnter",
-		cond = pluginCondForHost,
 	},
 	-- {
 	-- 	{
@@ -166,7 +179,6 @@ local lazyPlugins = {
 	-- neorg related
 	{
 		"https://github.com/vhyrro/luarocks.nvim",
-		cond = pluginCondForHost,
 		priority = 1000, -- We'd like this plugin to load first out of the rest
 		config = function()
 			-- luarocks 3.13+ changed require("luarocks.vendor.dkjson") to
@@ -188,7 +200,6 @@ local lazyPlugins = {
 	-- 	version = "*"
 	-- },
 	{ 'https://github.com/nvim-neorg/neorg',
-		cond = pluginCondForHost,
 		ft = "norg",
 		version = "*",
 		dependencies = {
@@ -221,7 +232,6 @@ local lazyPlugins = {
 		dependencies = "nvim-lua/plenary.nvim", config = { } },
 	{
 		"https://github.com/michaelrommel/nvim-silicon",
-		cond = pluginCondForHost,
 		lazy = true,
 		cmd = "Silicon",
 		-- config = function()
@@ -259,10 +269,9 @@ local lazyPlugins = {
 		'https://github.com/nvim-treesitter/nvim-treesitter',
 		branch = 'main',
 		build = ':TSUpdate',
-		cond = pluginCondForHost,
 	},
 
-	{ "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", branch = "main", cond = pluginCondForHost },
+	{ "https://github.com/nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
 	{ 'https://github.com/rmagatti/goto-preview' },
 
 	-- STICKY HEADERS/FUNCTIONS AT THE TOP OF THE WINDOW WHEN SCROLLING
@@ -304,20 +313,19 @@ local lazyPlugins = {
 	-- DEBUGGERS
 	----------------------------------------
 	{ 'https://github.com/michaelb/sniprun', build = 'sh ./install.sh'},
-	{ 'https://github.com/rcarriga/nvim-dap-ui', cond = pluginCondForHost,
+	{ 'https://github.com/rcarriga/nvim-dap-ui',
 		dependencies = {'https://github.com/mfussenegger/nvim-dap', 'https://github.com/nvim-neotest/nvim-nio' } },
-	{ 'https://github.com/theHamsta/nvim-dap-virtual-text', cond = pluginCondForHost,
+	{ 'https://github.com/theHamsta/nvim-dap-virtual-text',
 		dependencies = {'https://github.com/mfussenegger/nvim-dap'} },
-	{ 'https://github.com/nvim-telescope/telescope-dap.nvim', cond = pluginCondForHost,
+	{ 'https://github.com/nvim-telescope/telescope-dap.nvim',
 		dependencies = {'https://github.com/mfussenegger/nvim-dap'} },
-	{ 'https://github.com/mfussenegger/nvim-dap', cond = pluginCondForHost },
-	{ 'https://github.com/nvim-neotest/nvim-nio', cond = pluginCondForHost },
+	{ 'https://github.com/mfussenegger/nvim-dap' },
+	{ 'https://github.com/nvim-neotest/nvim-nio' },
 
 	----------------------------------------
 	-- SQL
 	----------------------------------------
 	{ "https://github.com/kndndrj/nvim-dbee",
-		cond = pluginCondForHost,
 		dependencies = {
 			"MunifTanjim/nui.nvim",
 		},
@@ -328,7 +336,6 @@ local lazyPlugins = {
 	},
 
 	{ "https://github.com/kristijanhusak/vim-dadbod-ui",
-		cond = pluginCondForHost,
 		dependencies = {
 			{ 'https://github.com/tpope/vim-dadbod', lazy = true },
 			{ 'https://github.com/kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql' }, lazy = true }, -- Optional
@@ -336,7 +343,19 @@ local lazyPlugins = {
 	}, -- https://github.com/kristijanhusak/vim-dadbod-ui?tab=readme-ov-file
 }
 
+-- Record config/opts/init errors that lazy catches internally (see loader.lua, "Capturing
+-- failures that happen inside lazy.nvim"). Must be installed before setup().
+-- pcall'd because a broken hook must never stop lazy's setup() below from running.
+local hookOk, hookErr = pcall(function() require("killerrat.plugins.loader").hook_lazy() end)
+if not hookOk then
+	vim.notify("killerrat: lazy hook not installed: " .. tostring(hookErr), vim.log.levels.WARN)
+end
+
 require("lazy").setup(lazyPlugins, {
+	-- Applied to EVERY spec that has no explicit `cond`, so hosts.lua governs all plugins.
+	-- A plugin whose cond is false is dropped from require("lazy.core.config").plugins, which is
+	-- what the per-file LazyHasPlugin guard checks.
+	defaults = { cond = pluginCondForHost },
 	performance = {
 		rtp = {
 			disabled_plugins = {

@@ -1,3 +1,4 @@
+local p = "sniprun"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require('sniprun').setup({
 	selected_interpreters={"JS_TS_deno"},
 	repl_enable={"JS_TS_deno"}

@@ -1,3 +1,4 @@
+local p = "goto-preview"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 require('goto-preview').setup {
  -- SEE: https://github.com/rmagatti/goto-preview#%EF%B8%8F-configuration
 	width = 120; -- Width of the floating window

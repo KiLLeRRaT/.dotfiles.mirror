@@ -1,3 +1,4 @@
+local p = "copilot.vim"; if (not require('killerrat.plugins._lazy-nvim').LazyHasPlugin(p)) then return end
 -- vim.g.copilot_no_tab_map = true
 --
 -- vim.g.copilot_filetypes = {
