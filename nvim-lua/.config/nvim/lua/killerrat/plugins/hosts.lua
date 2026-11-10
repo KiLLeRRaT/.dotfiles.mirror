@@ -14,7 +14,9 @@ local servers = {
 	["vim-dadbod-ui"] = false,
 	["avante.nvim"] = false,
 	-- ["copilot"] = false
-	["copilot.lua"] = false
+	["copilot.lua"] = false,
+	["nvim-treesitter"] = false,
+	["nvim-treesitter-textobjects"] = false
 }
 
 local iphone = {
@@ -47,11 +49,8 @@ plugins = {
 	["proxmox-backup-server4"] = servers,
 	["kiosk-1"] = servers,
 	["SALDOCPROD1"] = servers,
-	["SALDOCDEV1"] = servers,
-	["SALAZAGENTS01"] = vim.tbl_extend("force", servers, {
-		["nvim-treesitter"] = false,
-		["nvim-treesitter-textobjects"] = false,
-	}),
+	["SALDOCDEV1"] = vim.tbl_extend("force", servers, { }),
+	["SALAZAGENTS01"] = vim.tbl_extend("force", servers, { }),
 	["localhost"] = iphone,
 	["arch-i5-6400"] = {
 		["copilot.lua"] = false,
