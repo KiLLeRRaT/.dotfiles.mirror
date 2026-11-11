@@ -48,6 +48,7 @@ plugins = {
 	["proxmox-backup-server"] = servers,
 	["proxmox-backup-server4"] = servers,
 	["kiosk-1"] = servers,
+	["SALGIT1"] = servers,
 	["SALDOCPROD1"] = servers,
 	["SALDOCDEV1"] = vim.tbl_extend("force", servers, { }),
 	["SALAZAGENTS01"] = vim.tbl_extend("force", servers, { }),
