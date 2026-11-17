@@ -1,0 +1,32 @@
+# Numbered 99 so it runs after 98-bootbackup_post. Keeps the newest 10 pre/post pairs; older ones survive inside btrfs root snapshots.
+[Trigger]
+Type = Path
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = boot/*
+Target = usr/lib/modules/*/vmlinuz
+Target = usr/lib/initcpio/*
+Target = usr/lib/firmware/*
+Target = usr/lib/modules/*/extramodules/
+Target = usr/src/*/dkms.conf
+Target = usr/lib/systemd/systemd
+Target = usr/lib/systemd/systemd-udevd
+Target = usr/bin/cryptsetup
+Target = usr/lib/libcryptsetup.so
+Target = usr/lib/modprobe.d/
+
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = mkinitcpio
+Target = nvidia
+Target = nvidia-lts
+Target = nvidia-open
+
+[Action]
+Description = Pruning old /boot backups...
+When = PostTransaction
+Exec = /usr/bin/bash -c 'ls -1d /.bootbackup/2*_pre /.bootbackup/2*_post 2>/dev/null | sort | head -n -20 | xargs -r rm -rf --'

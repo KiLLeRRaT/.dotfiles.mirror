@@ -1,0 +1,33 @@
+# Numbered 98 so it runs after 90-mkinitcpio-install and 96-nvidia, which rebuild initramfs.
+[Trigger]
+Type = Path
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = boot/*
+Target = usr/lib/modules/*/vmlinuz
+Target = usr/lib/initcpio/*
+Target = usr/lib/firmware/*
+Target = usr/lib/modules/*/extramodules/
+Target = usr/src/*/dkms.conf
+Target = usr/lib/systemd/systemd
+Target = usr/lib/systemd/systemd-udevd
+Target = usr/bin/cryptsetup
+Target = usr/lib/libcryptsetup.so
+Target = usr/lib/modprobe.d/
+
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = mkinitcpio
+Target = nvidia
+Target = nvidia-lts
+Target = nvidia-open
+
+[Action]
+Depends = rsync
+Description = Backing up post /boot...
+When = PostTransaction
+Exec = /usr/bin/bash -c 'now=$(date +%Y_%m_%d_%H.%M.%S); rsync -a --mkpath --delete /boot/ "/.bootbackup/${now}_post"/ && touch "/.bootbackup/${now}_post"'
