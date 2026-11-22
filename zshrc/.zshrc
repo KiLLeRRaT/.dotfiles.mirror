@@ -280,6 +280,7 @@ cdf() {
 }
 
 alias tmux='tmux -2'
+alias td='tmux detach'
 alias tmux-clear-bell='tmux ls | cut -d':" -f1 | xargs -n1 tmux kill-session -C -t"
 alias grep='grep --color=auto'
 alias rl='source ~/.zshrc'
