@@ -109,3 +109,7 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[url "git@ssh.dev.azure.com:v3/sandfield/SAL.AI/"]
+	insteadOf = https://dev.azure.com/sandfield/SAL.AI/_git/
+[url "git@ssh.dev.azure.com:v3/sandfield/SAL.OnEvent/"]
+	insteadOf = https://dev.azure.com/sandfield/SAL.OnEvent/_git/
