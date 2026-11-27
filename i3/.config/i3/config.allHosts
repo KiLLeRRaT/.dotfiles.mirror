@@ -280,6 +280,13 @@ workspace_auto_back_and_forth yes
 bindsym $mod+Tab workspace back_and_forth
 bindsym $mod+Shift+Tab move container to workspace back_and_forth; workspace back_and_forth
 
+# Claude Code sessions: cycle waiting (oldest first), cycle all, jump back
+set $claude_nav ~/.dotfiles-ai/claude/.claude/hooks/claude-nav.sh
+bindsym $mod+bracketright exec --no-startup-id $claude_nav next-waiting
+bindsym $mod+bracketleft exec --no-startup-id $claude_nav prev-waiting
+bindsym $mod+Shift+bracketright exec --no-startup-id $claude_nav next
+bindsym $mod+Shift+bracketleft exec --no-startup-id $claude_nav prev
+bindsym $mod+grave exec --no-startup-id $claude_nav back
 
 # split orientation
 bindsym $mod+v split h;exec --no-startup-id notify-send 'tile horizontally'
