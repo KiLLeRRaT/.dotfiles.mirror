@@ -183,10 +183,6 @@ fi
 #		fi
 # fi
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"	# This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"	# This loads nvm bash_completion
-
 # alias ls='ls -lkh --color=auto' # THIS WAS PREVENTING ME FROM GETTING A LISTING WITH JUST THE FILENAMES!
 
 # color always so that if we pipe to grep, it will be colored
@@ -586,12 +582,22 @@ if [ -f ~/.config/zsh/plugins/insert-word.zsh ]; then
 fi
 
 
-# WAS CAUSING ISSUES, LETS SEE IF THINGS WORK AFTER REMOVING THIS
-# ADDED IT BACK, NOT SURE WHAT THE ISSUE WAS, BUT I DIDNT HAVE NODE ON MY PATH WHEN I DIDNT HAVE
-# THIS
+# nvm: Arch uses the package; other machines (git-cloned nvm) may need the elif fallback.
+# Added 2026-11-27. Review around 2027-11: on each machine run
+# `ls -l ~/.cache/zshrc-nvm-fallback-used`. If no machine touched it in a year, delete the elif
+# branch. See docs/todo/zshrc-nvm-fallback-review.md
+# Reminder fires from 2027-11-27 (epoch 1827226800); delete it with the elif branch.
+zmodload -F zsh/datetime p:EPOCHSECONDS
+(( EPOCHSECONDS > 1827226800 )) && print -P "%F{blue}zshrc: review the nvm elif fallback (see comment above)%f"
 if [ -f /usr/share/nvm/init-nvm.sh ]
 then
 	source /usr/share/nvm/init-nvm.sh
+elif [ -s "$HOME/.nvm/nvm.sh" ]
+then
+	mkdir -p "$HOME/.cache" && touch "$HOME/.cache/zshrc-nvm-fallback-used"
+	export NVM_DIR="$HOME/.nvm"
+	\. "$NVM_DIR/nvm.sh"
+	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 fi
 
 if [ -d /opt/cuda/ ]
